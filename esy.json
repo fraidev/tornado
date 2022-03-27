@@ -16,7 +16,7 @@
         "start_cli": "esy x tornado_cli.exe",
         "watch": "esy b dune build --watch",
         "build": "dune build -p tornado",
-        "test": "dune exec -p tornado -- ./test.sh",
+        "test": "dune test",
         "format": "dune build @fmt --auto-promote",
         "build_static": "dune build --profile=static --release"
     },
@@ -27,6 +27,9 @@
     },
     "devDependencies": {
         "@opam/ocaml-lsp-server": "*",
-        "@opam/ocamlformat": "*"
+        "@opam/ocamlformat": "*",
+        "@opam/ppx_inline_test": "*",
+        "@opam/ppx_assert": "*",
+        "@opam/ppx_expect": "*"
     }
 }
