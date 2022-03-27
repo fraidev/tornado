@@ -27,3 +27,10 @@ setup.log
 
 # Local OPAM switch
 _opam/
+
+node_modules/
+
+.vscode/
+
+esy.lock/
+_esy/

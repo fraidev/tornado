@@ -1,0 +1,4 @@
+(executable
+ (name tornado_cli)
+ (public_name tornado_cli.exe)
+ (libraries core))
