@@ -1,0 +1,7 @@
+(executable
+ (name cli)
+ (package tornado)
+ (public_name tornado_cli.exe)
+ (libraries bencode mirage-crypto uri piaf stdint)
+ (preprocess
+  (pps ppx_deriving.show)))
