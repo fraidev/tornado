@@ -22,7 +22,8 @@
   mirage-crypto
   uri
   piaf
-  stdint))
+  stdint
+  ppx_deriving))
 
 (package
  (name dev)

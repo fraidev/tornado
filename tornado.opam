@@ -12,6 +12,7 @@ depends: [
   "uri"
   "piaf"
   "stdint"
+  "ppx_deriving"
   "odoc" {with-doc}
 ]
 build: [
