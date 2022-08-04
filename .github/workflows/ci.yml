@@ -13,12 +13,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-latest
         ocaml-compiler:
+          - 4.13.x
           - 4.14.x
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     steps:
       - name: "Checkout the repository"
