@@ -28,7 +28,6 @@ jobs:
         uses: ocaml/setup-ocaml@master
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
-          dune-cache: true
 
       - name: "Install dependencies"
         run: opam install . --deps-only --with-test
