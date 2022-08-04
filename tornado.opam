@@ -8,6 +8,10 @@ depends: [
   "alcotest" {with-test}
   "dune" {>= "3.2" & build & >= "3.1.1"}
   "bencode"
+  "mirage-crypto"
+  "uri"
+  "piaf"
+  "stdint"
   "odoc" {with-doc}
 ]
 build: [

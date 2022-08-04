@@ -1,0 +1,6 @@
+(library
+ (name tornado)
+ (package tornado)
+ (libraries bencode mirage-crypto uri piaf stdint)
+ (preprocess
+  (pps ppx_deriving.show)))
