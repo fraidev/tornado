@@ -31,6 +31,9 @@ jobs:
       - name: "Install dependencies"
         run: opam install . --deps-only --with-test
 
+      - name: Lint fmt
+        uses: ocaml/setup-ocaml/lint-fmt@v2
+
       - run: opam exec -- dune build
 
       - run: opam exec -- dune runtest
