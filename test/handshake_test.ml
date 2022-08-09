@@ -115,5 +115,5 @@ let seq_test () =
 
 let tests =
   let open Alcotest in
-  "Handshake", [ test_case "seq." `Quick seq_test ]
+  "Handshake", [ test_case "Serialize handshake." `Quick seq_test ]
 ;;
