@@ -1,4 +1,3 @@
-(* open Tornado *)
 open Lwt.Syntax
 open Tornado
 
@@ -20,12 +19,12 @@ let task_client =
   Lwt.return ()
 ;;
 
-let handshake_test () =
+let tcp_test () =
   let tasks = Lwt.join [ taks_server; task_client ] in
   Lwt_main.run tasks;
 ;;
 
 let tests =
   let open Alcotest in
-  "TCP", [ test_case "TCP client and server should communicate each other." `Quick handshake_test ]
+  "TCP", [ test_case "TCP client and server should communicate each other." `Quick tcp_test ]
 ;;
