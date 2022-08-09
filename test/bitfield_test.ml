@@ -1,13 +1,5 @@
 open Tornado
 
-let check_array_char expected actual =
-  Alcotest.(check (array char)) "same char array" expected actual
-;;
-
-let check_bool expected actual =
-  Alcotest.(check bool) "same bool" expected actual
-;;
-
 type case =
   { actual : char array
   ; expected : char array
@@ -42,7 +34,7 @@ let has_piece_test () =
     ]
   in
   List.iteri
-    (fun index expected -> check_bool expected (Bitfield.has_piece bf index))
+    (fun index expected -> Check.check_bool expected (Bitfield.has_piece bf index))
     outputs
 ;;
 
@@ -75,7 +67,7 @@ let set_piece_test () =
       let actual_b = Bitfield.of_char_array case.actual in
       let expected_b = Bitfield.of_char_array case.expected in
       Bitfield.set_piece actual_b case.index;
-      check_array_char expected_b actual_b)
+      Check.check_array_char expected_b actual_b)
     cases
 ;;
 

@@ -13,6 +13,7 @@ depends: [
   "piaf"
   "stdint"
   "ppx_deriving"
+  "ppx_let"
   "odoc" {with-doc}
 ]
 build: [

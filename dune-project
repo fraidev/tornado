@@ -23,7 +23,9 @@
   uri
   piaf
   stdint
-  ppx_deriving))
+  ppx_deriving
+  ppx_let
+  ))
 
 (package
  (name dev)
