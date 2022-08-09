@@ -1,26 +1,44 @@
-type t =
-  { conn : string
-  ; chocked : bool
-  ; bitfield : string
-  ; peer : Peers.t
-  ; info_hash : string
-  ; peer_id : string
-  }
+open Lwt.Syntax
 
-(* let create peer peer_id info_hash = *)
-(*   let ba = Char.chr 0b11000000 *)
-(*   (1* let bb = Stdint.Uint8. ba 0b00100000 *1) *)
-(*   let bit = Bytes.set_int8 1 1 *)
-(*   let ca = Bytes.set_int8 (Bytes.create 20) 0 0 *)
-(*   let a = Bigarray.int8_unsigned 0 0 *)
-(*   let c = List.to_seq [ Char.chr 299 ] in *)
-(*   let d = Bytes.of_seq c in *)
-(*   (1* let conn = Piaf.Client.create Piaf.Config *1) *)
-(*   { conn = "BitTorrent protocol" *)
-(*   ; chocked = True *)
-(*   ; bitfield = "" *)
-(*   ; peer *)
-(*   ; info_hash *)
-(*   ; peer_id *)
+(* type t = *)
+(*   { conn : string *)
+(*   ; chocked : bool *)
+(*   ; bitfield : string *)
+(*   ; peer : Peers.t *)
+(*   ; info_hash : string *)
+(*   ; peer_id : string *)
 (*   } *)
+
+let close_connection fd = Lwt_unix.close fd
+
+let open_connection host port =
+  let fd = Lwt_unix.socket Unix.PF_INET Unix.SOCK_STREAM 0 in
+  let hostname = host in
+  let server_addr = (Unix.gethostbyname hostname).Unix.h_addr_list.(0) in
+  let sockaddr = Unix.ADDR_INET (server_addr, port) in
+  let+ ch_in, ch_out = Lwt_io.open_connection ~fd sockaddr in
+  fd, ch_in, ch_out
+;;
+
+(* let complete_handshake conn infohash peerID= *)
+(*   let task = *)
+(*     let handshake_bytes = Bytes.create 20 in *)
+(*     (1* let* () = Lwt_io.write out_chan (String.of_bytes handshake_bytes) in *1) *)
+(*   in *)
+(*   Lwt_unix.with_timeout 3. (fun () -> *)
+(*       Lwt_result.ok (task)) *)
 (* ;; *)
+
+(* let receive_bitfield in_chan = *)
+(*   let r = input_line in_chan in *)
+(*   Printf.printf "Bitfield: %s\n\n" r; *)
+(*   flush stdout; *)
+(*   r *)
+
+(* let create_client = *)
+(*   let* fd, in_ch, out_ch = open_connection "127.0.0.1" 8765 in *)
+(*   let* handshake = Lwt_result.get_exn (complete_handshake in_ch out_ch) in *)
+
+(* ;; *)
+(* let _s = receive_bitfield in_ch in *)
+(* close_connection in_ch *)

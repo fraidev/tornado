@@ -17,4 +17,3 @@ let serialize h =
   Buffer.add_bytes buf h.peer_id;
   buf
 ;;
-

@@ -3,4 +3,5 @@ profile = janestreet
 break-infix = fit-or-vertical
 parse-docstrings = true
 module-item-spacing = compact
+break-collection-expressions = wrap
 margin = 78

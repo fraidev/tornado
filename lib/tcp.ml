@@ -23,8 +23,7 @@ module Server = struct
     Lwt_io.read ic
   ;;
 
-  let close_connection fd = 
-    Lwt_unix.close fd
+  let close_connection fd = Lwt_unix.close fd
 end
 
 module Client = struct

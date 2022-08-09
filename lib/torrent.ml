@@ -27,13 +27,9 @@ module File = struct
     let announce_url = file.announce |> Option.get in
     let query =
       [ "info_hash", [ Bytes.to_string file.info_hash ]
-      ; "peer_id", [ Bytes.to_string peer_id ]
-      ; "port", [ Int.to_string port ]
-      ; "uploaded", [ "0" ]
-      ; "downloaded", [ "0" ]
-      ; "compact", [ "1" ]
-      ; "left", [ Int64.to_string (file.length |> Option.get) ]
-      ]
+      ; "peer_id", [ Bytes.to_string peer_id ]; "port", [ Int.to_string port ]
+      ; "uploaded", [ "0" ]; "downloaded", [ "0" ]; "compact", [ "1" ]
+      ; "left", [ Int64.to_string (file.length |> Option.get) ] ]
     in
     let uri = Uri.of_string announce_url in
     Uri.add_query_params uri query

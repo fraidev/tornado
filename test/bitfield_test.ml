@@ -11,30 +11,12 @@ let has_piece_test () =
     Bitfield.of_char_array [| Char.chr 0b01010100; Char.chr 0b01010100 |]
   in
   let outputs =
-    [ false
-    ; true
-    ; false
-    ; true
-    ; false
-    ; true
-    ; false
-    ; false
-    ; false
-    ; true
-    ; false
-    ; true
-    ; false
-    ; true
-    ; false
-    ; false
-    ; false
-    ; false
-    ; false
-    ; false
-    ]
+    [ false; true; false; true; false; true; false; false; false; true; false
+    ; true; false; true; false; false; false; false; false; false ]
   in
   List.iteri
-    (fun index expected -> Check.check_bool expected (Bitfield.has_piece bf index))
+    (fun index expected ->
+      Check.check_bool expected (Bitfield.has_piece bf index))
     outputs
 ;;
 
@@ -44,8 +26,7 @@ let set_piece_test () =
       { actual = [| Char.chr 0b01010100; Char.chr 0b01010100 |]
       ; expected = [| Char.chr 0b01011100; Char.chr 0b01010100 |]
       ; index = 4
-      }
-    ; (* Not Set *)
+      }; (* Not Set *)
       { actual = [| Char.chr 0b01010100; Char.chr 0b01010100 |]
       ; expected = [| Char.chr 0b01010100; Char.chr 0b01010100 |]
       ; index = 9
@@ -59,8 +40,7 @@ let set_piece_test () =
     ; { actual = [| Char.chr 0b01010100; Char.chr 0b01010100 |]
       ; expected = [| Char.chr 0b01010100; Char.chr 0b01010100 |]
       ; index = 19
-      }
-    ]
+      } ]
   in
   List.iter
     (fun case ->
@@ -78,6 +58,5 @@ let tests =
     ; test_case
         "Should return when there is a piece true by index."
         `Quick
-        has_piece_test
-    ] )
+        has_piece_test ] )
 ;;

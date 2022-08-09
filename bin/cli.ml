@@ -8,8 +8,7 @@ let apply_output_file str = output_file := Some str
 
 let spec_list =
   [ "-verbose", Arg.Set verbose, "Output debug information"
-  ; "-o", Arg.String apply_output_file, "Set output file name"
-  ]
+  ; "-o", Arg.String apply_output_file, "Set output file name" ]
 ;;
 
 (* This func is like a else. 
