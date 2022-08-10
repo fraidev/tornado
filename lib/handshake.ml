@@ -24,13 +24,19 @@ let serialize_to_string handshake =
   handshake |> serialize_to_bytes |> Bytes.to_string
 ;;
 
+type erros =
+  [ `Pstrlen_cannot_be_zero
+  | `Not_enough_bytes
+  | `Empty
+  ]
+
 let read in_ch =
   let open Lwt.Syntax in
   let length_buf = Bytes.create 1 in
   let* () = Lwt_io.read_into_exactly in_ch length_buf 0 1 in
   let pstrlen = Bytes.get_uint8 length_buf 0 in
   if pstrlen = 0
-  then Lwt.fail_with "pstrlen cannot be 0"
+  then Lwt.return_error `Pstrlen_cannot_be_zero
   else (
     let handshake_buf = Bytes.create (48 + pstrlen) in
     let* () = Lwt_io.read_into_exactly in_ch handshake_buf 0 (48 + pstrlen) in
@@ -49,5 +55,5 @@ let read in_ch =
     let info_hash = Buffer.to_bytes info_hash_buffer in
     let peer_id = Buffer.to_bytes peer_id_buffer in
     let pstr = Bytes.to_string (Bytes.sub handshake_buf 0 pstrlen) in
-    Lwt.return { pstr; info_hash; peer_id })
+    Lwt.return_ok { pstr; info_hash; peer_id })
 ;;
