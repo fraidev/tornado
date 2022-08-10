@@ -53,5 +53,4 @@ module Client = struct
     (* let* () = Lwt_io.(write stdout) ("Client received: " ^ r ^ "\n") in *)
     Lwt.return r
   ;;
-
 end
