@@ -3,6 +3,10 @@ open Lwt.Syntax
 module Server = struct
   type conn = { fd : Lwt_unix.file_descr }
 
+  let input_channel conn = Lwt_io.of_fd ~mode:Lwt_io.Input conn.fd
+  let output_channel conn = Lwt_io.of_fd ~mode:Lwt_io.Output conn.fd
+  let close_connection fd = Lwt_unix.close fd
+
   let listen ~port =
     let fd_proto = Lwt_unix.socket PF_INET SOCK_STREAM 0 in
     let* () =
@@ -14,16 +18,14 @@ module Server = struct
   ;;
 
   let write_line conn s =
-    let oc = Lwt_io.of_fd ~mode:Lwt_io.Output conn.fd in
+    let oc = output_channel conn in
     Lwt_io.write oc s
   ;;
 
   let read_line conn =
-    let ic = Lwt_io.of_fd ~mode:Lwt_io.Input conn.fd in
+    let ic = input_channel conn in
     Lwt_io.read ic
   ;;
-
-  let close_connection fd = Lwt_unix.close fd
 end
 
 module Client = struct
@@ -32,6 +34,8 @@ module Client = struct
     ; sockaddr : Lwt_unix.sockaddr
     }
 
+  let input_channel conn = Lwt_io.of_fd ~mode:Lwt_io.Input conn.fd
+  let output_channel conn = Lwt_io.of_fd ~mode:Lwt_io.Output conn.fd
   let close_connection fd = Lwt_unix.close fd
 
   let open_connection hostname port =
@@ -43,12 +47,12 @@ module Client = struct
   ;;
 
   let write_line conn s =
-    let oc = Lwt_io.of_fd ~mode:Lwt_io.Output conn.fd in
+    let oc = output_channel conn in
     Lwt_io.write oc s
   ;;
 
   let read_line conn =
-    let ic = Lwt_io.of_fd ~mode:Lwt_io.Input conn.fd in
+    let ic = input_channel conn in
     let* r = Lwt_io.read_line ic in
     (* let* () = Lwt_io.(write stdout) ("Client received: " ^ r ^ "\n") in *)
     Lwt.return r
