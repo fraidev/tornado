@@ -9,24 +9,29 @@ open Lwt.Syntax
 (*   ; peer_id : string *)
 (*   } *)
 
-let close_connection fd = Lwt_unix.close fd
+let close_connection fd = Tcp.Client.close_connection fd
 
 let open_connection host port =
-  let fd = Lwt_unix.socket Unix.PF_INET Unix.SOCK_STREAM 0 in
-  let hostname = host in
-  let server_addr = (Unix.gethostbyname hostname).Unix.h_addr_list.(0) in
-  let sockaddr = Unix.ADDR_INET (server_addr, port) in
-  let+ ch_in, ch_out = Lwt_io.open_connection ~fd sockaddr in
-  fd, ch_in, ch_out
+  let* c_conn = Tcp.Client.open_connection host port in
+  (* let* () = Tcp.Client.write_line c_conn "hey, I am a client\n" in *)
+  (* let* r = Tcp.Client.read_line c_conn in *)
+  (* let* () = Tcp.Client.close_connection c_conn.fd in *)
+  Lwt.return c_conn
 ;;
 
-(* let complete_handshake conn infohash peerID= *)
+(* let complete_handshake conn infohash peerID = *)
 (*   let task = *)
-(*     let handshake_bytes = Bytes.create 20 in *)
+(*     let handshake = Handshake.create infohash peerID in *)
+(*     let handshake_str = Handshake.serialize_to_string handshake in *)
+(* 	(1* Lwt_io.BE. *1) *)
+(*     let* () = Tcp.Client.write_line conn handshake_str in *)
+
+(*     let* read_response = Tcp.Client.read_line_char conn in *)
+(*     (1* let handshake_response =  read_response in *1) *)
+(*     (1* Handshake.read conn *1) *)
 (*     (1* let* () = Lwt_io.write out_chan (String.of_bytes handshake_bytes) in *1) *)
 (*   in *)
-(*   Lwt_unix.with_timeout 3. (fun () -> *)
-(*       Lwt_result.ok (task)) *)
+(*   Lwt_unix.with_timeout 3. (fun () -> Lwt_result.ok task) *)
 (* ;; *)
 
 (* let receive_bitfield in_chan = *)

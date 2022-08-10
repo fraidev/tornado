@@ -29,8 +29,7 @@ end
 module Client = struct
   type conn =
     { fd : Lwt_unix.file_descr
-    ; ch_in : Lwt_io.input_channel
-    ; ch_out : Lwt_io.output_channel
+    ; sockaddr : Lwt_unix.sockaddr
     }
 
   let close_connection fd = Lwt_unix.close fd
@@ -38,9 +37,9 @@ module Client = struct
   let open_connection hostname port =
     let fd = Lwt_unix.socket Unix.PF_INET Unix.SOCK_STREAM 0 in
     let server_addr = (Unix.gethostbyname hostname).Unix.h_addr_list.(0) in
-    let sockaddr = Unix.ADDR_INET (server_addr, port) in
-    let* ch_in, ch_out = Lwt_io.open_connection ~fd sockaddr in
-    Lwt.return { fd; ch_in; ch_out }
+    let sockaddr = Lwt_unix.ADDR_INET (server_addr, port) in
+    let* () = Lwt_unix.connect fd sockaddr in
+    Lwt.return { fd; sockaddr }
   ;;
 
   let write_line conn s =
@@ -49,8 +48,10 @@ module Client = struct
   ;;
 
   let read_line conn =
-    let* r = Lwt_io.read_line conn.ch_in in
-    let* () = Lwt_io.(write stdout) ("Client received: " ^ r ^ "\n") in
+    let ic = Lwt_io.of_fd ~mode:Lwt_io.Input conn.fd in
+    let* r = Lwt_io.read_line ic in
+    (* let* () = Lwt_io.(write stdout) ("Client received: " ^ r ^ "\n") in *)
     Lwt.return r
   ;;
+
 end
