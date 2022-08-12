@@ -1,5 +1,5 @@
-open Lwt.Syntax
 open Tornado
+open Shared
 
 let seq_test () =
   let hash_info =
@@ -59,10 +59,10 @@ let read_test_task () =
   in
   Lwt_list.iter_p
     (fun case ->
-      let ch_in =
-        Lwt_io.of_bytes ~mode:Lwt_io.Input (Lwt_bytes.of_bytes case.input)
-      in
-      let* handshake = Handshake.read ch_in in
+      (* let ch_in = *)
+      (*   Lwt_io.of_bytes ~mode:Lwt_io.Input (Lwt_bytes.of_bytes case.input) *)
+      (* in *)
+      let handshake = Handshake.read case.input in
       (match case.expected with
       | Some exp ->
         let result_handshake = Result.get_ok handshake in

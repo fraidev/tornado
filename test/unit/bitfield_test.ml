@@ -1,4 +1,5 @@
 open Tornado
+open Shared
 
 type case =
   { actual : char array
