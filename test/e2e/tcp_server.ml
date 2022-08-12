@@ -1,6 +1,12 @@
-let close_connection server = Lwt_io.shutdown_server server
+open Lwt.Syntax
 
-let listen handler ~port =
-  let socketaddr = Unix.ADDR_INET (Unix.inet_addr_loopback, port) in
-  Lwt_io.establish_server_with_client_address socketaddr handler
+let skip _ = ()
+
+let listen ~stop ~port handler =
+  let config = `Port port in
+  let* ctx = Conduit_lwt_unix.init ~src:"127.0.0.1" () in
+  let server () =
+    Conduit_lwt_unix.serve ~stop ~ctx ~mode:(`TCP config) ~on_exn:skip handler
+  in
+  Lwt.return server
 ;;

@@ -11,12 +11,12 @@ type t =
 
 type erros = [ `Info_hash_is_not_equal ]
 
-let complete_handshake conn info_hash peerID =
+let complete_handshake ic oc info_hash peerID =
   Lwt_unix.with_timeout 3. (fun () ->
       let handshake = Handshake.create info_hash peerID in
-      let handshake_string = Handshake.serialize_to_string handshake in
-      let* () = Tcp.Client.write_line conn handshake_string in
-      let* line = Tcp.Client.read_line conn in
+      let handshake_bytes = Handshake.serialize_to_bytes handshake in
+      let* () = Tcp.Client.write_bytes oc handshake_bytes in
+      let* line = Tcp.Client.read_line ic in
       let buf = Bytes.unsafe_of_string line in
       let handshake_result = Handshake.read buf in
       match handshake_result with
