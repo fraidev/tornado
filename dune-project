@@ -21,6 +21,7 @@
     (>= 3.1.1)))
   bencode
   mirage-crypto
+  conduit-lwt-unix
   uri
   piaf
   stdint
