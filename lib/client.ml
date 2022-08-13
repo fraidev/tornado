@@ -16,9 +16,14 @@ let complete_handshake ic oc info_hash peerID =
       let handshake = Handshake.create info_hash peerID in
       let handshake_bytes = Handshake.serialize_to_bytes handshake in
       let* () = Tcp.Client.write_bytes oc handshake_bytes in
-      let* line = Tcp.Client.read_line ic in
-      let buf = Bytes.unsafe_of_string line in
-      let handshake_result = Handshake.read buf in
+      let pstrlen_buf = Bytes.create 1 in
+      let* () = Lwt_io.read_into_exactly ic pstrlen_buf 0 1 in
+      let pstrlen = Bytes.get_uint8 pstrlen_buf 0 in
+      let handshake_bytes = Bytes.create (pstrlen + 48) in
+      let* () =
+        Lwt_io.read_into_exactly ic handshake_bytes 0 (pstrlen + 48)
+      in
+      let handshake_result = Handshake.read pstrlen handshake_bytes in
       match handshake_result with
       | Ok h ->
         if h.info_hash <> info_hash
