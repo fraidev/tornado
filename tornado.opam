@@ -10,6 +10,7 @@ depends: [
   "dune" {>= "3.2" & build & >= "3.1.1"}
   "bencode"
   "mirage-crypto"
+  "conduit-lwt-unix"
   "uri"
   "piaf"
   "stdint"
