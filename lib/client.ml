@@ -32,6 +32,18 @@ let complete_handshake ic oc info_hash peerID =
       | Error e -> Lwt.return_error e)
 ;;
 
+(* let recv_bitfield ic oc = *)
+(*   Lwt_unix.with_timeout 6. (fun () -> *)
+(*       let* line = Tcp.Client.read_line ic in *)
+(*       let buf = Bytes.unsafe_of_string line in *)
+(*       let handshake_result = Handshake.read buf in *)
+(*       match handshake_result with *)
+(*       | Ok h -> *)
+(*         if h.info_hash <> info_hash *)
+(*         then Lwt.return_error `Info_hash_is_not_equal *)
+(*         else Lwt.return_ok h *)
+(*       | Error e -> Lwt.return_error e) *)
+
 let create conn chocked bitfield peer info_hash peer_id =
   { conn; chocked; bitfield; peer; info_hash; peer_id }
 ;;
