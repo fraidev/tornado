@@ -1,6 +1,16 @@
 (library
  (name tornado)
  (package tornado)
- (libraries bencode mirage-crypto conduit conduit-lwt-unix uri piaf stdint lwt lwt.unix unix)
+ (libraries
+  bencode
+  mirage-crypto
+  conduit
+  conduit-lwt-unix
+  uri
+  piaf
+  stdint
+  lwt
+  lwt.unix
+  unix)
  (preprocess
   (pps ppx_deriving.show ppx_let)))
