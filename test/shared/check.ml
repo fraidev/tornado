@@ -13,3 +13,7 @@ let check_bool expected actual =
 let check_string expected actual =
   Alcotest.(check string) "same string" expected actual
 ;;
+
+let check_int expected actual =
+  Alcotest.(check int) "same int" expected actual
+;;
