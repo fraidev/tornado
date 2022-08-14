@@ -28,12 +28,9 @@ let serialize_to_string handshake =
 type erros = [ `Pstrlen_cannot_be_zero ]
 
 let read pstrlen handshake_bytes =
-  (* let length_buf = Bytes.sub bytes_buf 0 1 in *)
-  (* let pstrlen = Bytes.get_uint8 length_buf 0 in *)
   if pstrlen = 0
   then Result.error `Pstrlen_cannot_be_zero
   else (
-    (* let handshake_bytes = Bytes.sub bytes_buf 1 (48 + pstrlen) in *)
     let info_hash_buffer = Buffer.create 20 in
     let peer_id_buffer = Buffer.create 20 in
     let () =
