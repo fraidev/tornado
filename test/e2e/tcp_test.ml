@@ -19,7 +19,9 @@ let tcp_test _switch () =
   let stop, do_stop = Lwt.wait () in
   let* server = Tcp_server.listen ~stop ~port handler in
   let client_test () =
-    let* _flow, ic, oc = Tcp.Client.open_connection port in
+    let* _flow, ic, oc =
+      Tcp.Client.open_connection Ipaddr.V4.localhost port
+    in
     let* () = Lwt_io.write oc "hello" in
     let* msg = Lwt_io.read ic ~count:5 in
     Check.check_string "HELLO" msg;

@@ -1,7 +1,8 @@
 open Stdint
+open Ipaddr
 
 type t =
-  { ip : string
+  { ip : V4.t
   ; port : int
   }
 [@@deriving show]
@@ -23,9 +24,13 @@ let create peers_bin =
         |> Uint16.to_int
       in
       let ip_array =
-        List.init ip_size (fun j ->
-            Uint8.of_bytes_big_endian ip_bin j |> Uint8.to_string)
+        Array.init ip_size (fun j ->
+            Uint8.of_bytes_big_endian ip_bin j |> Uint8.to_int)
       in
-      let ip = String.concat "." ip_array in
+      let ip =
+        Ipaddr.V4.make ip_array.(0) ip_array.(1) ip_array.(2) ip_array.(3)
+      in
       { ip; port })
 ;;
+
+let to_string peer = Printf.sprintf "%s:%d" (V4.to_string peer.ip) peer.port

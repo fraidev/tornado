@@ -1,8 +1,8 @@
 open Lwt.Syntax
 
 module Client = struct
-  let open_connection port =
-    let client = `TCP (`IP Ipaddr.(V4 V4.localhost), `Port port) in
+  let open_connection host port =
+    let client = `TCP (`IP Ipaddr.(V4 host), `Port port) in
     Conduit_lwt_unix.(connect ~ctx:(Lazy.force default_ctx) client)
   ;;
 

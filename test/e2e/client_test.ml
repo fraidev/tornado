@@ -45,7 +45,7 @@ let successful_handshake_test _switch () =
   let stop, do_stop = Lwt.wait () in
   let* server = Tcp_server.listen ~stop ~port (handler server_handshake) in
   Lwt.async server;
-  let* _flow, ic, oc = Tcp.Client.open_connection port in
+  let* _flow, ic, oc = Tcp.Client.open_connection Ipaddr.V4.localhost port in
   let* handshake_result =
     Client.complete_handshake ic oc info_hash client_peer_id
   in
@@ -80,7 +80,7 @@ let failed_handshake_test _switch () =
   let stop, do_stop = Lwt.wait () in
   let* server = Tcp_server.listen ~stop ~port (handler server_handshake) in
   Lwt.async server;
-  let* _flow, ic, oc = Tcp.Client.open_connection port in
+  let* _flow, ic, oc = Tcp.Client.open_connection Ipaddr.V4.localhost port in
   let* handshake_result =
     Client.complete_handshake ic oc info_hash client_peer_id
   in

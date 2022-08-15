@@ -44,7 +44,7 @@ let request_peers file peers port =
     in
     let peers_bytes = peers_string |> Bytes.of_string in
     let peers = Peers.create peers_bytes in
-    Printf.printf "Peers: %s\n" (Peers.show peers.(0));
+    (* Printf.printf "Peers: %s\n" (Peers.show peers.(0)); *)
     Result.ok peers
   | Error error ->
     let message = Piaf.Error.to_string error in
