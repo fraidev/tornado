@@ -1,23 +1,23 @@
-type t = char array
+type t = bytes
 
-let of_char_array (input : char array) : t = input
+let of_bytes (input : bytes) : t = input
 
 let has_piece (bf : t) index =
   let byteIndex = index / 8 in
   let offset = index mod 8 in
-  if byteIndex < 0 || byteIndex >= Array.length bf
+  if byteIndex < 0 || byteIndex >= Bytes.length bf
   then false
-  else (Char.code bf.(byteIndex) lsr (7 - offset)) land 1 <> 0
+  else (Char.code (Bytes.get bf byteIndex) lsr (7 - offset)) land 1 <> 0
 ;;
 
 let set_piece (bf : t) index =
   let byteIndex = index / 8 in
   let offset = index mod 8 in
-  if byteIndex < 0 || byteIndex >= Array.length bf
+  if byteIndex < 0 || byteIndex >= Bytes.length bf
   then ()
   else (
     let newChar =
-      Char.chr (Char.code bf.(byteIndex) lor (1 lsl (7 - offset)))
+      Char.chr (Char.code (Bytes.get bf byteIndex) lor (1 lsl (7 - offset)))
     in
-    Array.set bf byteIndex newChar)
+    Bytes.set bf byteIndex newChar)
 ;;

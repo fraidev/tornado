@@ -11,14 +11,4 @@ module Client = struct
     let* () = Lwt_io.write_from_exactly oc buf 0 buf_len in
     Lwt_io.flush oc
   ;;
-
-  let write_line oc s =
-    let* () = Lwt_io.write_line oc s in
-    Lwt_io.flush oc
-  ;;
-
-  let read_line ic =
-    let* r = Lwt_io.read_line ic in
-    Lwt.return r
-  ;;
 end
