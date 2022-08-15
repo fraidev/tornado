@@ -48,9 +48,7 @@ let send_not_interested oc =
 
 let send_unchoke oc =
   let msg : Message.t =
-    { id = Message.id_of_message_type Msg_unchoke
-    ; payload = Bytes.create 0
-    }
+    { id = Message.id_of_message_type Msg_unchoke; payload = Bytes.create 0 }
   in
   let msg_bytes = Message.serialize (Some msg) in
   Tcp.Client.write_bytes oc msg_bytes

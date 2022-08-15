@@ -94,7 +94,7 @@ let parse_piece index buf msg =
              start
              (Bytes.length buf)))
     | s ->
-      let data = Bytes.sub msg.payload 8 ((Bytes.length msg.payload)- 8) in
+      let data = Bytes.sub msg.payload 8 (Bytes.length msg.payload - 8) in
       (match data with
       | d when s + Bytes.length d > Bytes.length buf ->
         Result.error
