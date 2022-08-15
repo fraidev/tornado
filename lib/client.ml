@@ -2,16 +2,64 @@ open Lwt.Syntax
 open Stdint
 
 type t =
-  { conn : string
+  { in_ch : Lwt_io.input_channel
+  ; out_ch : Lwt_io.output_channel
   ; chocked : bool
-  ; bitfield : string
+  ; bitfield : Bitfield.t
   ; peer : Peers.t
-  ; info_hash : string
-  ; peer_id : string
+  ; info_hash : bytes
+  ; peer_id : bytes
   }
 
-let create conn chocked bitfield peer info_hash peer_id =
-  { conn; chocked; bitfield; peer; info_hash; peer_id }
+let read ic =
+  let length_buf = Bytes.create 4 in
+  let* () = Lwt_io.read_into_exactly ic length_buf 0 4 in
+  let length = Uint32.to_int (Uint32.of_bytes_big_endian length_buf 0) in
+  let msg_bytes = Bytes.create length in
+  let* () = Lwt_io.read_into_exactly ic msg_bytes 0 length in
+  Lwt.return (Message.read length_buf msg_bytes)
+;;
+
+let send_request oc index start length =
+  let msg = Message.format_request index start length in
+  let msg_bytes = Message.serialize (Some msg) in
+  Tcp.Client.write_bytes oc msg_bytes
+;;
+
+let send_interested oc =
+  let msg : Message.t =
+    { id = Message.id_of_message_type Msg_interested
+    ; payload = Bytes.create 0
+    }
+  in
+  let msg_bytes = Message.serialize (Some msg) in
+  Tcp.Client.write_bytes oc msg_bytes
+;;
+
+let send_not_interested oc =
+  let msg : Message.t =
+    { id = Message.id_of_message_type Msg_not_interested
+    ; payload = Bytes.create 0
+    }
+  in
+  let msg_bytes = Message.serialize (Some msg) in
+  Tcp.Client.write_bytes oc msg_bytes
+;;
+
+let send_unchoke oc =
+  let msg : Message.t =
+    { id = Message.id_of_message_type Msg_unchoke
+    ; payload = Bytes.create 0
+    }
+  in
+  let msg_bytes = Message.serialize (Some msg) in
+  Tcp.Client.write_bytes oc msg_bytes
+;;
+
+let send_have oc index =
+  let msg = Message.format_have index in
+  let msg_bytes = Message.serialize (Some msg) in
+  Tcp.Client.write_bytes oc msg_bytes
 ;;
 
 let complete_handshake ic oc info_hash peerID =
@@ -36,12 +84,7 @@ let complete_handshake ic oc info_hash peerID =
 
 let recv_bitfield ic =
   Lwt_unix.with_timeout 6. (fun () ->
-      let length_buf = Bytes.create 4 in
-      let* () = Lwt_io.read_into_exactly ic length_buf 0 4 in
-      let length = Uint32.to_int (Uint32.of_bytes_big_endian length_buf 0) in
-      let msg_bytes = Bytes.create length in
-      let* () = Lwt_io.read_into_exactly ic msg_bytes 0 length in
-      let msg_result = Message.read length_buf msg_bytes in
+      let* msg_result = read ic in
       match msg_result with
       | None ->
         Lwt.return_error
@@ -55,9 +98,28 @@ let recv_bitfield ic =
             (Printf.sprintf
                "Expected bitfield but got ID %d"
                (Uint8.to_int m.id)))
-      | Some m -> Lwt.return_ok m)
+      | Some m -> Lwt.return_ok m.payload)
 ;;
 
-(* let connect = *) 
-(*   let conn = Tcp.Client.open_connection *)
-  
+let connect (peer : Peers.t) info_hash peer_id =
+  let* _, in_ch, out_ch = Tcp.Client.open_connection peer.ip peer.port in
+  let* complete_handshake_result =
+    complete_handshake in_ch out_ch info_hash peer_id
+  in
+  match complete_handshake_result with
+  | Error e -> Lwt.return_error e
+  | Ok _ ->
+    let* recv_bitfield_result = recv_bitfield in_ch in
+    (match recv_bitfield_result with
+    | Error e -> Lwt.return_error e
+    | Ok bitfield ->
+      Lwt.return_ok
+        { in_ch
+        ; out_ch
+        ; chocked = true
+        ; bitfield = Bitfield.of_bytes bitfield
+        ; peer
+        ; info_hash
+        ; peer_id
+        })
+;;
