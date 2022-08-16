@@ -4,7 +4,7 @@ open Stdint
 type t =
   { in_ch : Lwt_io.input_channel
   ; out_ch : Lwt_io.output_channel
-  ; chocked : bool
+  ; chocked : bool ref
   ; bitfield : Bitfield.t
   ; peer : Peers.t
   ; info_hash : bytes
@@ -110,16 +110,18 @@ let recv_bitfield ic =
 ;;
 
 let connect (peer : Peers.t) info_hash peer_id =
-  Logs.info (fun m -> m "Connecting to %s" (Peers.show peer));
+  let* () =
+    Logs_lwt.debug (fun m -> m "Connecting to %s" (Peers.show peer))
+  in
   let* _, in_ch, out_ch = Tcp.Client.open_connection peer.ip peer.port in
-  let* () = Lwt_io.printlf "Connected to %s" (Peers.show peer) in
+  let* () = Logs_lwt.debug (fun m -> m "Connected to %s" (Peers.show peer)) in
   let* complete_handshake_result =
     complete_handshake in_ch out_ch info_hash peer_id
   in
   match complete_handshake_result with
   | Error e -> Lwt.return_error e
   | Ok _ ->
-    let* () = Lwt_io.printl "Completed handshake" in
+    let* () = Logs_lwt.debug (fun m -> m "Completed handshake") in
     let* recv_bitfield_result = recv_bitfield in_ch in
     (match recv_bitfield_result with
     | Error e -> Lwt.return_error e
@@ -127,7 +129,7 @@ let connect (peer : Peers.t) info_hash peer_id =
       Lwt.return_ok
         { in_ch
         ; out_ch
-        ; chocked = true
+        ; chocked = ref true
         ; bitfield = Bitfield.of_bytes bitfield
         ; peer
         ; info_hash

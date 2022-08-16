@@ -33,4 +33,33 @@ let create peers_bin =
       { ip; port })
 ;;
 
+
+let request_peers uri =
+  let get_sync uri =
+    let open Lwt_result.Syntax in
+    Lwt_main.run
+      (print_endline "Sending request...";
+       let* response = Piaf.Client.Oneshot.get uri in
+       if Piaf.Status.is_successful response.status
+       then Piaf.Body.to_string response.body
+       else (
+         let message = Piaf.Status.to_string response.status in
+         Lwt.return (Error (`Msg message))))
+  in
+  match get_sync uri with
+  | Ok body ->
+    let tracker_bencode = Bencode.decode (`String body) in
+    let peers_string =
+      Bencode_utils.bencode_to_string tracker_bencode "peers" |> Option.get
+    in
+    let peers_bytes = peers_string |> Bytes.of_string in
+    let peers = create peers_bytes in
+    (* Printf.printf "Peers: %s\n" (Peers.show peers.(0)); *)
+    Result.ok peers
+  | Error error ->
+    let message = Piaf.Error.to_string error in
+    prerr_endline ("Error: " ^ message);
+    Result.error `Download_peers_error
+;;
+
 let to_string peer = Printf.sprintf "%s:%d" (V4.to_string peer.ip) peer.port

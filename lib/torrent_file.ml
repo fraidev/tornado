@@ -1,6 +1,7 @@
 open Bencode_utils
 open Lwt.Syntax
 
+(* TORRENT *)
 type t =
   { announce : string option
   ; info_hash : bytes
@@ -10,47 +11,6 @@ type t =
   ; name : string
   }
 [@@deriving show]
-
-let build_tracker_url file peer_id port =
-  let announce_url = file.announce |> Option.get in
-  let query =
-    [ "info_hash", [ Bytes.to_string file.info_hash ]
-    ; "peer_id", [ Bytes.to_string peer_id ]; "port", [ Int.to_string port ]
-    ; "uploaded", [ "0" ]; "downloaded", [ "0" ]; "compact", [ "1" ]
-    ; "left", [ Int64.to_string file.length ] ]
-  in
-  let uri = Uri.of_string announce_url in
-  Uri.add_query_params uri query
-;;
-
-let request_peers file peers port =
-  let uri = build_tracker_url file peers port in
-  let get_sync uri =
-    let open Lwt_result.Syntax in
-    Lwt_main.run
-      (print_endline "Sending request...";
-       let* response = Piaf.Client.Oneshot.get uri in
-       if Piaf.Status.is_successful response.status
-       then Piaf.Body.to_string response.body
-       else (
-         let message = Piaf.Status.to_string response.status in
-         Lwt.return (Error (`Msg message))))
-  in
-  match get_sync uri with
-  | Ok body ->
-    let tracker_bencode = Bencode.decode (`String body) in
-    let peers_string =
-      Bencode_utils.bencode_to_string tracker_bencode "peers" |> Option.get
-    in
-    let peers_bytes = peers_string |> Bytes.of_string in
-    let peers = Peers.create peers_bytes in
-    (* Printf.printf "Peers: %s\n" (Peers.show peers.(0)); *)
-    Result.ok peers
-  | Error error ->
-    let message = Piaf.Error.to_string error in
-    prerr_endline ("Error: " ^ message);
-    Result.error `Download_peers_error
-;;
 
 let create_with_beencode bencode_root =
   let announce = bencode_to_string bencode_root "announce" in
@@ -71,9 +31,22 @@ let open_file input_file =
   create_with_beencode bencode_file
 ;;
 
+let build_tracker_url file peer_id port =
+  let announce_url = file.announce |> Option.get in
+  let query =
+    [ "info_hash", [ Bytes.to_string file.info_hash ]
+    ; "peer_id", [ Bytes.to_string peer_id ]; "port", [ Int.to_string port ]
+    ; "uploaded", [ "0" ]; "downloaded", [ "0" ]; "compact", [ "1" ]
+    ; "left", [ Int64.to_string file.length ] ]
+  in
+  let uri = Uri.of_string announce_url in
+  Uri.add_query_params uri query
+;;
+
 let download_file output_file torrent_file =
   let random_peer = Bytes.create 20 in
-  let peers = Result.get_ok (request_peers torrent_file random_peer 6881) in
+  let uri = build_tracker_url torrent_file random_peer 6881 in
+  let peers = Result.get_ok (Peers.request_peers uri) in
   (* Download *)
   let torrent =
     Torrent.create_torrent
@@ -85,9 +58,6 @@ let download_file output_file torrent_file =
       (torrent_file.length |> Int64.to_int)
       torrent_file.name
   in
-  (* let* () = *)
-  (*   Lwt_io.printf "Torrent file: %s\n" (Torrent.show torrent) *)
-  (* in *)
   let* buf = Torrent.download torrent in
   (* Write File *)
   let* out_ch = Lwt_io.open_file ~mode:Output (Option.get output_file) in
