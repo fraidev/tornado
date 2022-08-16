@@ -14,10 +14,8 @@ let bencode_to_int bencode field =
 
 let sha1_of_bencode benconde =
   let bencode_bytes = Bencode_streaming.Encode.to_bytes benconde in
-  let bytes =
-    Mirage_crypto.Hash.SHA1.digest (Cstruct.of_bytes bencode_bytes)
-  in
-  Cstruct.to_bytes bytes
+  let bytes = Sha1.digest bencode_bytes in
+  bytes
 ;;
 
 let split_piece_hashes pieces_bencode =

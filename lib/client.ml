@@ -13,10 +13,10 @@ type t =
 
 let read ic =
   let length_buf = Bytes.create 4 in
-  let* () = Lwt_io.read_into_exactly ic length_buf 0 4 in
+  let* _ = Lwt_io.read_into ic length_buf 0 4 in
   let length = Uint32.to_int (Uint32.of_bytes_big_endian length_buf 0) in
   let msg_bytes = Bytes.create length in
-  let* () = Lwt_io.read_into_exactly ic msg_bytes 0 length in
+  let* _ = Lwt_io.read_into ic msg_bytes 0 length in
   Lwt.return (Message.read length_buf msg_bytes)
 ;;
 
@@ -26,14 +26,14 @@ let send_request oc index start length =
   Tcp.Client.write_bytes oc msg_bytes
 ;;
 
-let send_interested oc =
+let send_interested t =
   let msg : Message.t =
     { id = Message.id_of_message_type Msg_interested
     ; payload = Bytes.create 0
     }
   in
   let msg_bytes = Message.serialize (Some msg) in
-  Tcp.Client.write_bytes oc msg_bytes
+  Tcp.Client.write_bytes t.out_ch msg_bytes
 ;;
 
 let send_not_interested oc =
@@ -46,12 +46,12 @@ let send_not_interested oc =
   Tcp.Client.write_bytes oc msg_bytes
 ;;
 
-let send_unchoke oc =
+let send_unchoke t =
   let msg : Message.t =
     { id = Message.id_of_message_type Msg_unchoke; payload = Bytes.create 0 }
   in
   let msg_bytes = Message.serialize (Some msg) in
-  Tcp.Client.write_bytes oc msg_bytes
+  Tcp.Client.write_bytes t.out_ch msg_bytes
 ;;
 
 let send_have oc index =
@@ -63,15 +63,21 @@ let send_have oc index =
 let complete_handshake ic oc info_hash peerID =
   Lwt_unix.with_timeout 3. (fun () ->
       let handshake = Handshake.create info_hash peerID in
+      let* () =
+        Logs_lwt.debug (fun m -> m "handshake %s" (Handshake.show handshake))
+      in
       let handshake_bytes = Handshake.serialize_to_bytes handshake in
       let* () = Tcp.Client.write_bytes oc handshake_bytes in
       let pstrlen_buf = Bytes.create 1 in
-      let* () = Lwt_io.read_into_exactly ic pstrlen_buf 0 1 in
+      (* let* result = Lwt_io.read ic in *)
+      (* let* () = Logs_lwt.debug (fun m -> m "stringona %s" result) in *)
+      let* _ = Lwt_io.read_into ic pstrlen_buf 0 1 in
       let pstrlen = Bytes.get_uint8 pstrlen_buf 0 in
+      (* let* () = Logs_lwt.debug (fun m -> m "abc %d" abc) in *)
+      let* () = Logs_lwt.debug (fun m -> m "pstrlen %d" pstrlen) in
       let handshake_bytes = Bytes.create (pstrlen + 48) in
-      let* () =
-        Lwt_io.read_into_exactly ic handshake_bytes 0 (pstrlen + 48)
-      in
+      let* _ = Lwt_io.read_into ic handshake_bytes 0 (pstrlen + 48) in
+      let* () = Logs_lwt.debug (fun m -> m "handshake_bytes %d" pstrlen) in
       let handshake_result = Handshake.read pstrlen handshake_bytes in
       match handshake_result with
       | Ok h when h.info_hash <> info_hash ->
@@ -100,13 +106,16 @@ let recv_bitfield ic =
 ;;
 
 let connect (peer : Peers.t) info_hash peer_id =
+  Logs.info (fun m -> m "Connecting to %s" (Peers.show peer));
   let* _, in_ch, out_ch = Tcp.Client.open_connection peer.ip peer.port in
+  let* () = Lwt_io.printlf "Connected to %s" (Peers.show peer) in
   let* complete_handshake_result =
     complete_handshake in_ch out_ch info_hash peer_id
   in
   match complete_handshake_result with
   | Error e -> Lwt.return_error e
   | Ok _ ->
+    let* () = Lwt_io.printl "Completed handshake" in
     let* recv_bitfield_result = recv_bitfield in_ch in
     (match recv_bitfield_result with
     | Error e -> Lwt.return_error e

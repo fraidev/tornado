@@ -20,13 +20,13 @@
     :build
     (>= 3.1.1)))
   bencode
-  mirage-crypto
   conduit-lwt-unix
   uri
   piaf
   stdint
   ppx_deriving
   ppx_let
+  ppx_sexp_conv
   ))
 
 (package

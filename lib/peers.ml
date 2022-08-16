@@ -15,7 +15,7 @@ let create peers_bin =
   Printf.printf "num_peers: %d\n" num_peers;
   if peers_bin_length mod peer_size <> 0
   then failwith "Received malformed peers";
-  Array.init num_peers (fun i ->
+  List.init num_peers (fun i ->
       let ip_size = 4 in
       let offset = i * peer_size in
       let ip_bin = Bytes.sub peers_bin offset ip_size in

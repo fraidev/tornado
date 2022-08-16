@@ -5,9 +5,9 @@ type t =
   { announce : string option
   ; info_hash : bytes
   ; piece_hashes : bytes array
-  ; piece_length : int64 option
-  ; length : int64 option
-  ; name : string option
+  ; piece_length : int64
+  ; length : int64
+  ; name : string
   }
 [@@deriving show]
 
@@ -17,7 +17,7 @@ let build_tracker_url file peer_id port =
     [ "info_hash", [ Bytes.to_string file.info_hash ]
     ; "peer_id", [ Bytes.to_string peer_id ]; "port", [ Int.to_string port ]
     ; "uploaded", [ "0" ]; "downloaded", [ "0" ]; "compact", [ "1" ]
-    ; "left", [ Int64.to_string (file.length |> Option.get) ] ]
+    ; "left", [ Int64.to_string file.length ] ]
   in
   let uri = Uri.of_string announce_url in
   Uri.add_query_params uri query
@@ -55,11 +55,18 @@ let request_peers file peers port =
 let create_with_beencode bencode_root =
   let announce = bencode_to_string bencode_root "announce" in
   let info_beencode = Bencode.dict_get bencode_root "info" |> Option.get in
-  let length = bencode_to_int info_beencode "length" in
-  let piece_length = bencode_to_int info_beencode "piece length" in
+  let length = bencode_to_int info_beencode "length" |> Option.get in
+  let piece_length =
+    bencode_to_int info_beencode "piece length" |> Option.get
+  in
   let pieces = Bencode.dict_get info_beencode "pieces" |> Option.get in
-  let name = bencode_to_string info_beencode "name" in
+  let name = bencode_to_string info_beencode "name" |> Option.get in
   let info_hash = sha1_of_bencode info_beencode in
+  (* let info_hash = *)
+  (*   [ 204; 91; 247; 44; 13; 184; 78; 45; 233; 95; 150; 121; 84; 68; 28; 1; 124 *)
+  (*   ; 90; 54; 49 ] *)
+  (*   |> Utils.ints_to_bytes *)
+  (* in *)
   let piece_hashes = split_piece_hashes pieces in
   { announce; info_hash; piece_hashes; piece_length; length; name }
 ;;
@@ -79,11 +86,14 @@ let download_file output_file torrent_file =
       random_peer
       torrent_file.info_hash
       torrent_file.piece_hashes
-      torrent_file.piece_length
-      torrent_file.length
+      (torrent_file.piece_length |> Int64.to_int)
+      (torrent_file.length |> Int64.to_int)
       torrent_file.name
   in
-  let buf = Torrent.download torrent in
+  (* let* () = *)
+  (*   Lwt_io.printf "Torrent file: %s\n" (Torrent.show torrent) *)
+  (* in *)
+  let* buf = Torrent.download torrent in
   (* Write File *)
   let* out_ch = Lwt_io.open_file ~mode:Output (Option.get output_file) in
   let* () = Lwt_io.write_from_exactly out_ch buf 0 (Bytes.length buf) in
