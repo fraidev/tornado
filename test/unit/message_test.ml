@@ -8,9 +8,9 @@ let format_request_test () =
       0x00; 0x00; 0x10; 0xe1 (* Length *) ]
     |> Utils.ints_to_bytes
   in
-  let index = Uint32.of_int 4 in
-  let start = Uint32.of_int 567 in
-  let length = Uint32.of_int 4321 in
+  let index = 4 in
+  let start = 567 in
+  let length = 4321 in
   let msg = Message.format_request index start length in
   Check.check_bytes expected msg.payload
 ;;

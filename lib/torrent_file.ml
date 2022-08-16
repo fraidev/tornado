@@ -62,11 +62,6 @@ let create_with_beencode bencode_root =
   let pieces = Bencode.dict_get info_beencode "pieces" |> Option.get in
   let name = bencode_to_string info_beencode "name" |> Option.get in
   let info_hash = sha1_of_bencode info_beencode in
-  (* let info_hash = *)
-  (*   [ 204; 91; 247; 44; 13; 184; 78; 45; 233; 95; 150; 121; 84; 68; 28; 1; 124 *)
-  (*   ; 90; 54; 49 ] *)
-  (*   |> Utils.ints_to_bytes *)
-  (* in *)
   let piece_hashes = split_piece_hashes pieces in
   { announce; info_hash; piece_hashes; piece_length; length; name }
 ;;

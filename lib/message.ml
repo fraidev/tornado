@@ -51,9 +51,9 @@ let to_string msg =
 
 let format_request index start length =
   let payload = Bytes.create 12 in
-  Uint32.to_bytes_big_endian index payload 0;
-  Uint32.to_bytes_big_endian start payload 4;
-  Uint32.to_bytes_big_endian length payload 8;
+  Uint32.to_bytes_big_endian (Uint32.of_int index) payload 0;
+  Uint32.to_bytes_big_endian (Uint32.of_int start) payload 4;
+  Uint32.to_bytes_big_endian (Uint32.of_int length) payload 8;
   { id = id_of_message_type Msg_request; payload }
 ;;
 

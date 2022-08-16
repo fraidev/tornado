@@ -20,30 +20,34 @@ let read ic =
   Lwt.return (Message.read length_buf msg_bytes)
 ;;
 
-let send_request oc index start length =
+let send_request t index start length =
   let msg = Message.format_request index start length in
   let msg_bytes = Message.serialize (Some msg) in
-  Tcp.Client.write_bytes oc msg_bytes
+  Tcp.Client.write_bytes t.out_ch msg_bytes
 ;;
 
 let send_interested t =
+  let* () = Logs_lwt.debug (fun m -> m "Sending interested\n") in
   let msg : Message.t =
     { id = Message.id_of_message_type Msg_interested
     ; payload = Bytes.create 0
     }
   in
   let msg_bytes = Message.serialize (Some msg) in
-  Tcp.Client.write_bytes t.out_ch msg_bytes
+  let* () = Tcp.Client.write_bytes t.out_ch msg_bytes in
+  Logs_lwt.debug (fun m -> m "Sent interested\n")
 ;;
 
 let send_not_interested oc =
+  let* () = Logs_lwt.debug (fun m -> m "Sending interested\n") in
   let msg : Message.t =
     { id = Message.id_of_message_type Msg_not_interested
     ; payload = Bytes.create 0
     }
   in
   let msg_bytes = Message.serialize (Some msg) in
-  Tcp.Client.write_bytes oc msg_bytes
+  let* () = Tcp.Client.write_bytes oc msg_bytes in
+  Logs_lwt.debug (fun m -> m "Sent interested\n")
 ;;
 
 let send_unchoke t =
