@@ -28,7 +28,6 @@ let calculate_piece_size torrent index =
 
 type piece_work =
   { index : int
-  ; start : int
   ; length : int
   ; hash : bytes
   }
@@ -197,8 +196,7 @@ let download_torrent torrent peer pieces_controller final_buf =
     Array.mapi
       (fun index hash ->
         let length = calculate_piece_size torrent index in
-        let start = index * Constants.block_len in
-        let pw = { index; start; length; hash } in
+        let pw = { index; length; hash } in
         pw)
       torrent.piece_hashes
     |> Array.to_list
@@ -245,7 +243,8 @@ let download_torrent torrent peer pieces_controller final_buf =
           | Ok () ->
             Log.debug "Integrity of piece %d is ok." pw.index;
             Pieces.add_received pieces_controller pw.index;
-            Bytes.blit piece_buf 0 final_buf pw.start pw.length
+            let start, _ = calculate_bounds_for_piece torrent pw.index in
+            Bytes.blit piece_buf 0 final_buf start pw.length
         in
         let* () = Client.send_have client pw.index in
         Lwt.return_unit)

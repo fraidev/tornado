@@ -1,6 +1,6 @@
 open Tornado
 
-let usage = "torreto [-verbose] <torrent_file> -o <output>"
+let usage = "tornado [-verbose] <torrent_file> -o <output>"
 let verbose = ref false
 let output_file : string option ref = ref None
 let input_file = ref ""
