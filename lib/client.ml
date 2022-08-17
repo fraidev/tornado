@@ -13,10 +13,10 @@ type t =
 
 let read ic =
   let length_buf = Bytes.create 4 in
-  let* _ = Lwt_io.read_into ic length_buf 0 4 in
+  let* () = Lwt_io.read_into_exactly ic length_buf 0 4 in
   let length = Uint32.to_int (Uint32.of_bytes_big_endian length_buf 0) in
   let msg_bytes = Bytes.create length in
-  let* _ = Lwt_io.read_into ic msg_bytes 0 length in
+  let* () = Lwt_io.read_into_exactly ic msg_bytes 0 length in
   Lwt.return (Message.read length_buf msg_bytes)
 ;;
 
@@ -27,27 +27,23 @@ let send_request t index start length =
 ;;
 
 let send_interested t =
-  let* () = Logs_lwt.debug (fun m -> m "Sending interested\n") in
   let msg : Message.t =
     { id = Message.id_of_message_type Msg_interested
     ; payload = Bytes.create 0
     }
   in
   let msg_bytes = Message.serialize (Some msg) in
-  let* () = Tcp.Client.write_bytes t.out_ch msg_bytes in
-  Logs_lwt.debug (fun m -> m "Sent interested\n")
+  Tcp.Client.write_bytes t.out_ch msg_bytes
 ;;
 
 let send_not_interested oc =
-  let* () = Logs_lwt.debug (fun m -> m "Sending interested\n") in
   let msg : Message.t =
     { id = Message.id_of_message_type Msg_not_interested
     ; payload = Bytes.create 0
     }
   in
   let msg_bytes = Message.serialize (Some msg) in
-  let* () = Tcp.Client.write_bytes oc msg_bytes in
-  Logs_lwt.debug (fun m -> m "Sent interested\n")
+  Tcp.Client.write_bytes oc msg_bytes
 ;;
 
 let send_unchoke t =
@@ -73,11 +69,8 @@ let complete_handshake ic oc info_hash peerID =
       let handshake_bytes = Handshake.serialize_to_bytes handshake in
       let* () = Tcp.Client.write_bytes oc handshake_bytes in
       let pstrlen_buf = Bytes.create 1 in
-      (* let* result = Lwt_io.read ic in *)
-      (* let* () = Logs_lwt.debug (fun m -> m "stringona %s" result) in *)
       let* _ = Lwt_io.read_into ic pstrlen_buf 0 1 in
       let pstrlen = Bytes.get_uint8 pstrlen_buf 0 in
-      (* let* () = Logs_lwt.debug (fun m -> m "abc %d" abc) in *)
       let* () = Logs_lwt.debug (fun m -> m "pstrlen %d" pstrlen) in
       let handshake_bytes = Bytes.create (pstrlen + 48) in
       let* _ = Lwt_io.read_into ic handshake_bytes 0 (pstrlen + 48) in

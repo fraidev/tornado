@@ -21,47 +21,32 @@ let calculate_block_len length piece_length piece_index block_index =
 ;;
 
 type pieces_controller =
-  { received : bool ref array array
-  ; requested : bool ref array array
+  { received : bool ref array
+  ; requested : bool ref array
+  ; piece_hashes_len : int
   }
 
-let build_pieces length piece_length =
-  let n_pieces = piece_length / 20 in
-  let arr =
-    Array.init n_pieces (fun piece_index ->
-        let blocks_per_piece =
-          blocks_per_piece length piece_length piece_index
-        in
-        Array.make blocks_per_piece (ref false))
-  in
-  arr
+let build_pieces piece_hashes_len =
+  Array.init piece_hashes_len (fun _ -> ref false)
 ;;
 
-let create_pieces_state length piece_length =
-  let received = build_pieces length piece_length in
-  let requested = build_pieces length piece_length in
+let create_pieces_state piece_hashes_len =
+  let received = build_pieces piece_hashes_len in
+  let requested = build_pieces piece_hashes_len in
   Logs.debug (fun m -> m "requested %d " (Array.length requested));
-  { received; requested }
+  { received; requested; piece_hashes_len }
 ;;
 
-let add_requested pc pw_start pw_index =
-  let block_index = pw_start / Constants.block_len in
-  pc.requested.(pw_index).(block_index) := true
-;;
+let add_requested pc pw_index = pc.requested.(pw_index) := true
+let add_received pc pw_index = pc.received.(pw_index) := true
 
-let add_received pc pw_start pw_index =
-  let block_index = pw_start / Constants.block_len in
-  pc.received.(pw_index).(block_index) := true
-;;
-
-let needed pc pw_start pw_index =
+let needed pc pw_index =
   (* Logs.info (fun m -> m "start %d index %d \n" pw_start pw_index); *)
   (* Logs.info (fun m -> m "pc_requested %d \n" (Array.length pc.requested)); *)
-  let block_index = pw_start / Constants.block_len in
+  (* let block_index = pw_start / Constants.block_len in *)
   (* Logs.info (fun m -> m "block_index %d \n" block_index); *)
-  not !(pc.requested.(pw_index).(block_index))
+  not !(pc.requested.(pw_index))
 ;;
 
-let is_done pc =
-  Array.for_all (fun arr -> Array.for_all (fun a -> !a) arr) pc.received
-;;
+let not_received pc pw_index = not !(pc.received.(pw_index))
+let is_done pc = Array.for_all (fun a -> !a) pc.received

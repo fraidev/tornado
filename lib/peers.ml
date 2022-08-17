@@ -33,7 +33,6 @@ let create peers_bin =
       { ip; port })
 ;;
 
-
 let request_peers uri =
   let get_sync uri =
     let open Lwt_result.Syntax in

@@ -1,4 +1,4 @@
-open Lwt.Syntax
+(* open Lwt.Syntax *)
 
 module Client = struct
   let open_connection host port =
@@ -8,7 +8,8 @@ module Client = struct
 
   let write_bytes oc buf =
     let buf_len = Bytes.length buf in
-    let* () = Lwt_io.write_from_exactly oc buf 0 buf_len in
-    Lwt_io.flush oc
+    Lwt_io.write_from_exactly oc buf 0 buf_len
   ;;
+  (* let* () = Lwt_io.write_from_exactly oc buf 0 buf_len in *)
+  (* Lwt_io.flush oc *)
 end
