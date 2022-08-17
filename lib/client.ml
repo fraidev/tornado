@@ -54,10 +54,10 @@ let send_unchoke t =
   Tcp.Client.write_bytes t.out_ch msg_bytes
 ;;
 
-let send_have oc index =
-  let msg = Message.format_have index in
+let send_have client index =
+  let msg = Message.format_have (Uint32.of_int index) in
   let msg_bytes = Message.serialize (Some msg) in
-  Tcp.Client.write_bytes oc msg_bytes
+  Tcp.Client.write_bytes client.out_ch msg_bytes
 ;;
 
 let complete_handshake ic oc info_hash peerID =
@@ -69,11 +69,11 @@ let complete_handshake ic oc info_hash peerID =
       let handshake_bytes = Handshake.serialize_to_bytes handshake in
       let* () = Tcp.Client.write_bytes oc handshake_bytes in
       let pstrlen_buf = Bytes.create 1 in
-      let* _ = Lwt_io.read_into ic pstrlen_buf 0 1 in
+      let* () = Lwt_io.read_into_exactly ic pstrlen_buf 0 1 in
       let pstrlen = Bytes.get_uint8 pstrlen_buf 0 in
       let* () = Logs_lwt.debug (fun m -> m "pstrlen %d" pstrlen) in
       let handshake_bytes = Bytes.create (pstrlen + 48) in
-      let* _ = Lwt_io.read_into ic handshake_bytes 0 (pstrlen + 48) in
+      let* () = Lwt_io.read_into_exactly ic handshake_bytes 0 (pstrlen + 48) in
       let* () = Logs_lwt.debug (fun m -> m "handshake_bytes %d" pstrlen) in
       let handshake_result = Handshake.read pstrlen handshake_bytes in
       match handshake_result with

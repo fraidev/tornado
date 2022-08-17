@@ -27,7 +27,7 @@ let setup_log ?style_renderer level =
 
 let info fmt a = Logs.info (fun m -> m fmt a)
 let debug fmt a = Logs.debug (fun m -> m fmt a)
-let err fmt = Logs.err (fun m -> m fmt)
-let info_lwt fmt = Logs_lwt.info (fun m -> m fmt)
-let debug_lwt fmt = Logs_lwt.debug (fun m -> m fmt)
-let err_lwt fmt = Logs_lwt.err (fun m -> m fmt)
+let err fmt a = Logs.err (fun m -> m fmt a)
+let info_lwt fmt a = Logs_lwt.info (fun m -> m fmt a)
+let debug_lwt fmt a = Logs_lwt.debug (fun m -> m fmt a)
+let err_lwt fmt a = Logs_lwt.err (fun m -> m fmt a)

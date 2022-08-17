@@ -119,7 +119,7 @@ let read_message (client : Client.t) pw torrent state =
 ;;
 
 let rec request (client : Client.t) state pw =
-  if !(state.backlog) < 1 && !(state.requested) < pw.length
+  if !(state.backlog) < 5 && !(state.requested) < pw.length
   then
     let* () =
       (* let block_size = calculate_block_size pw.length !(state.requested) in *)
@@ -153,7 +153,6 @@ let rec request (client : Client.t) state pw =
 ;;
 
 let rec down (client : Client.t) pw torrent state =
-  let* _ = read_message client pw torrent state in
   if !(state.downloaded) < pw.length
   then
     let* () =
@@ -161,6 +160,7 @@ let rec down (client : Client.t) pw torrent state =
       then request client state pw
       else Lwt.return_unit
     in
+    let* _ = read_message client pw torrent state in
     down client pw torrent state
   else Lwt.return state.buf
 ;;
@@ -187,11 +187,18 @@ let try_download_piece (client : Client.t) pw torrent =
         Logs_lwt.info (fun m ->
             m
               "Downloaded piece (%d of %d) with size %d"
-              pw.index
-              Constants.block_len
+              (pw.index + 1)
+              (Array.length torrent.piece_hashes)
               (Bytes.length piece_buf))
       in
       Lwt.return piece_buf)
+;;
+
+let check_integrity (pw : piece_work) buf =
+  let hash = Sha1.digest buf in
+  if hash = pw.hash
+  then Result.ok ()
+  else Result.Error (`Error "Hash mismatch")
 ;;
 
 let start_download_worker torrent peer pieces_controller =
@@ -238,7 +245,14 @@ let start_download_worker torrent peer pieces_controller =
           Logs_lwt.debug (fun m ->
               m "This client does have piece %d\n" pw.index)
         in
-        let* _buf = try_download_piece client pw torrent in
+        let* piece_buf = try_download_piece client pw torrent in
+        let integrity_result = check_integrity pw piece_buf in
+        let () =
+          match integrity_result with
+          | Ok () -> Log.debug "Integrity of piece %d is ok." pw.index
+          | Error (`Error e) -> Log.err "Error: %s" e
+        in
+        let* () = Client.send_have client pw.index in
         Lwt.return_unit)
     pieces_work
 ;;
