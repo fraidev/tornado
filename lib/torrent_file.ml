@@ -8,7 +8,7 @@ type t =
   ; piece_hashes : bytes array
   ; piece_length : int64
   ; length : int64
-  ; name : string
+  ; name : string option
   }
 [@@deriving show]
 
@@ -20,7 +20,7 @@ let create_with_beencode bencode_root =
     bencode_to_int info_beencode "piece length" |> Option.get
   in
   let pieces = Bencode.dict_get info_beencode "pieces" |> Option.get in
-  let name = bencode_to_string info_beencode "name" |> Option.get in
+  let name = bencode_to_string info_beencode "name" in
   let info_hash = sha1_of_bencode info_beencode in
   let piece_hashes = split_piece_hashes pieces in
   { announce; info_hash; piece_hashes; piece_length; length; name }
@@ -56,11 +56,18 @@ let download_file output_file torrent_file =
       torrent_file.piece_hashes
       (torrent_file.piece_length |> Int64.to_int)
       (torrent_file.length |> Int64.to_int)
-      torrent_file.name
   in
-  let* buf = Torrent.download torrent in
+  let* final_buf = Torrent.download torrent in
   (* Write File *)
-  let* out_ch = Lwt_io.open_file ~mode:Output (Option.get output_file) in
-  let* () = Lwt_io.write_from_exactly out_ch buf 0 (Bytes.length buf) in
+  let file_name =
+    match output_file, torrent_file.name with
+    | Some file, _ -> file
+    | _, Some file -> file
+    | _, _ -> "torrent_file"
+  in
+  let* out_ch = Lwt_io.open_file ~mode:Output file_name in
+  let* () =
+    Lwt_io.write_from_exactly out_ch final_buf 0 (Bytes.length final_buf)
+  in
   Lwt.return ()
 ;;

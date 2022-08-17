@@ -130,14 +130,3 @@ let digest (bytes : bytes) : bytes =
     (Bytes.of_string "")
     (List.map number_to_32_bit_be [ !h0; !h1; !h2; !h3; !h4 ])
 ;;
-
-(*
- * let () =
- *   if Array.length (Sys.argv) <> 2
- *   then failwith "Expected exactly one argument after executable name";
- *   let to_digest = Sys.argv.(1) in
- *   let raw_summary = digest (Bytes.of_string to_digest) in
- *   let hex_digest = encode_hex raw_summary |> Bytes.to_string in
- *   Printf.printf "input : \"%s\"\n" to_digest;
- *   Printf.printf "digest: %s\n" hex_digest;
- *)

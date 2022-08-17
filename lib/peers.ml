@@ -10,9 +10,7 @@ type t =
 let create peers_bin =
   let peer_size = 6 in
   let peers_bin_length = Bytes.length peers_bin in
-  Printf.printf "peers_bin_length: %d\n" peers_bin_length;
   let num_peers = peers_bin_length / peer_size in
-  Printf.printf "num_peers: %d\n" num_peers;
   if peers_bin_length mod peer_size <> 0
   then failwith "Received malformed peers";
   List.init num_peers (fun i ->
@@ -53,7 +51,6 @@ let request_peers uri =
     in
     let peers_bytes = peers_string |> Bytes.of_string in
     let peers = create peers_bytes in
-    (* Printf.printf "Peers: %s\n" (Peers.show peers.(0)); *)
     Result.ok peers
   | Error error ->
     let message = Piaf.Error.to_string error in
