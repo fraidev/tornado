@@ -61,10 +61,10 @@ let read_message (client : Client.t) pw _torrent state =
     (* in *)
     (match Stdint.Uint8.to_int msg.id with
     | 0 ->
-      client.chocked := true;
+      client.choked := true;
       Lwt.return_none
     | 1 ->
-      client.chocked := false;
+      client.choked := false;
       Lwt.return_none
     | 4 ->
       (match Message.parse_have msg with
@@ -146,7 +146,7 @@ let rec download_piece (client : Client.t) pw torrent state =
   if !(state.downloaded) < pw.length
   then
     let* () =
-      if not !(client.chocked)
+      if not !(client.choked)
       then request client state pw
       else Lwt.return_unit
     in

@@ -4,7 +4,7 @@ open Stdint
 type t =
   { in_ch : Lwt_io.input_channel
   ; out_ch : Lwt_io.output_channel
-  ; chocked : bool ref
+  ; choked : bool ref
   ; bitfield : Bitfield.t
   ; peer : Peers.t
   ; info_hash : bytes
@@ -121,7 +121,7 @@ let connect (peer : Peers.t) info_hash peer_id =
       Lwt.return_ok
         { in_ch
         ; out_ch
-        ; chocked = ref true
+        ; choked = ref true
         ; bitfield = Bitfield.of_bytes bitfield
         ; peer
         ; info_hash
