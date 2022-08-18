@@ -51,7 +51,6 @@ let calculate_block_size piece_length requested =
 ;;
 
 let read_message (client : Client.t) pw _torrent state =
-  (* let buf = Bytes.create pw.length in *)
   let* message = Client.read client.in_ch in
   match message with
   | None -> Lwt.return_none
@@ -78,10 +77,6 @@ let read_message (client : Client.t) pw _torrent state =
         Bitfield.set_piece client.bitfield index;
         Lwt.return_none)
     | 7 ->
-      (* let* () = *)
-      (*   Logs_lwt.info (fun m -> *)
-      (*       m "There is msg %s" (Message.to_string message)) *)
-      (* in *)
       (match Message.parse_piece pw.index state.buf msg with
       | Error (`Error e) ->
         let* () =
@@ -91,19 +86,9 @@ let read_message (client : Client.t) pw _torrent state =
         Lwt.return_none
       | Ok buf_len ->
         let* () =
-          (* final_buf *)
-          (* Pieces.add_received pieces_controller pw.index; *)
           state.backlog := !(state.backlog) - 1;
           state.downloaded := !(state.downloaded) + buf_len;
           Lwt.return_unit
-          (* Logs_lwt.info (fun m ->*)
-          (*     m*)
-          (*       "Downloaded block (%d of %d) of piece (%d of %d)"*)
-          (*       (* !(state.requested) *)*)
-          (*       !(state.downloaded)*)
-          (*       pw.length (*all block size*)*)
-          (*       pw.index*)
-          (*       (Array.length torrent.piece_hashes))*)
         in
         Lwt.return_none)
     | _ -> Lwt.return_none)
@@ -114,23 +99,6 @@ let rec request (client : Client.t) state pw =
   then
     let* () =
       let block_size = calculate_block_size pw.length !(state.requested) in
-      (* let* () = *)
-      (*   Logs_lwt.debug (fun m -> *)
-      (*       m *)
-      (*         "pw.index: %d requested: %d block_size: %d " *)
-      (*         pw.index *)
-      (*         !(state.requested) *)
-      (*         block_size) *)
-      (* in *)
-      (* let* () = *)
-      (*   Logs_lwt.debug (fun m -> *)
-      (*       m *)
-      (*         "Requesting the block number %d of %d of piece %d" *)
-      (*         ((!(state.requested) / block_size) + 1) *)
-      (*         (1* block_size *1) *)
-      (*         (pw.length / block_size) *)
-      (*         pw.index) *)
-      (* in *)
       let* () =
         Client.send_request client pw.index !(state.requested) block_size
       in

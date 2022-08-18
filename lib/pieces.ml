@@ -21,7 +21,7 @@ let calculate_block_len length piece_length piece_index block_index =
 ;;
 
 type pieces_controller =
-  { received : bool ref array (* ; requested : bool ref array *)
+  { received : bool ref array
   ; piece_hashes_len : int
   }
 
@@ -31,21 +31,9 @@ let build_pieces piece_hashes_len =
 
 let create_pieces_state piece_hashes_len =
   let received = build_pieces piece_hashes_len in
-  (* let requested = build_pieces piece_hashes_len in *)
-  (* Logs.debug (fun m -> m "requested %d " (Array.length requested)); *)
   { received; piece_hashes_len }
 ;;
 
-(* let add_requested pc pw_index = pc.requested.(pw_index) := true *)
 let add_received pc pw_index = pc.received.(pw_index) := true
-
-(* let needed pc pw_index = *)
-(*   (1* Logs.info (fun m -> m "start %d index %d \n" pw_start pw_index); *1) *)
-(*   (1* Logs.info (fun m -> m "pc_requested %d \n" (Array.length pc.requested)); *1) *)
-(*   (1* let block_index = pw_start / Constants.block_len in *1) *)
-(*   (1* Logs.info (fun m -> m "block_index %d \n" block_index); *1) *)
-(*   not !(pc.received.(pw_index)) *)
-(* ;; *)
-
 let received pc pw_index = !(pc.received.(pw_index))
 let is_done pc = Array.for_all (fun a -> !a) pc.received
