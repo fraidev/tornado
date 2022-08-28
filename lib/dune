@@ -6,7 +6,7 @@
   conduit
   conduit-lwt-unix
   uri
-  piaf
+  cohttp-lwt-unix
   stdint
   sexplib
   fmt

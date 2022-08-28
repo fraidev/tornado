@@ -46,7 +46,7 @@ let build_tracker_url file peer_id port =
 let download_file output_file torrent_file =
   let random_peer = Bytes.create 20 in
   let uri = build_tracker_url torrent_file random_peer 6881 in
-  let peers = Result.get_ok (Peers.request_peers uri) in
+  let* peers = (Peers.request_peers uri) in
   (* Download *)
   let torrent =
     Torrent.create_torrent

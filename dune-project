@@ -22,7 +22,7 @@
   bencode
   conduit-lwt-unix
   uri
-  piaf
+  cohttp-lwt-unix
   stdint
   ppx_deriving
   ppx_let
@@ -37,7 +37,5 @@
  (depends
   (ocamlformat
    (>= 0.20))
-  (ocamlformat-rpc
-   (>= 0.19))
   (ocaml-lsp-server
    (>= 1.10.3))))

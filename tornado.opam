@@ -11,7 +11,7 @@ depends: [
   "bencode"
   "conduit-lwt-unix"
   "uri"
-  "piaf"
+  "cohttp-lwt-unix"
   "stdint"
   "ppx_deriving"
   "ppx_let"

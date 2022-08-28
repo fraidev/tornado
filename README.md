@@ -8,11 +8,14 @@ First, create a switch like so
 
 ```bash
 opam switch create . 4.14.0 --no-install
+or
+opam switch create . 5.0.0~alpha1+options --no-install
 ```
 
 Then you can run
 
 ```
+opam pin stdint https://github.com/andrenth/ocaml-stdint.git#322a8a4a8c69e4a0b75763460b915200356e3af3
 opam install . --deps-only --with-test
 ```
 
