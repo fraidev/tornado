@@ -224,7 +224,7 @@ let rec start_work
             torrent
             peers_head
             pieces_work_chan
-            pieces_result_chan);
+            pieces_result_chan)
     in
     start_work env sw torrent peers_tail pieces_work_chan pieces_result_chan
 ;;

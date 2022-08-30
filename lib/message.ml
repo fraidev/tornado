@@ -86,27 +86,27 @@ let parse_piece index buf msg =
   | m ->
     let start = Uint32.to_int (Uint32.of_bytes_big_endian m.payload 4) in
     (match start with
-    | s when s > Bytes.length buf ->
-      Result.error
-        (`Error
-          (Printf.sprintf
-             "Start offset too high. %d >= %d"
-             start
-             (Bytes.length buf)))
-    | s ->
-      let data = Bytes.sub msg.payload 8 (Bytes.length msg.payload - 8) in
-      (match data with
-      | d when s + Bytes.length d > Bytes.length buf ->
-        Result.error
-          (`Error
-            (Printf.sprintf
-               "Data too long [%d] for offset %d with length %d"
-               (Bytes.length data)
-               start
-               (Bytes.length buf)))
-      | d ->
-        Bytes.blit data 0 buf s (Bytes.length data);
-        Result.ok (Bytes.length d)))
+     | s when s > Bytes.length buf ->
+       Result.error
+         (`Error
+           (Printf.sprintf
+              "Start offset too high. %d >= %d"
+              start
+              (Bytes.length buf)))
+     | s ->
+       let data = Bytes.sub msg.payload 8 (Bytes.length msg.payload - 8) in
+       (match data with
+        | d when s + Bytes.length d > Bytes.length buf ->
+          Result.error
+            (`Error
+              (Printf.sprintf
+                 "Data too long [%d] for offset %d with length %d"
+                 (Bytes.length data)
+                 start
+                 (Bytes.length buf)))
+        | d ->
+          Bytes.blit data 0 buf s (Bytes.length data);
+          Result.ok (Bytes.length d)))
 ;;
 
 let parse_have msg =

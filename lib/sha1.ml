@@ -80,9 +80,7 @@ let digest (bytes : bytes) : bytes =
     let chunk = Bytes.sub preprocessed (i * 64) 64 in
     let w =
       Array.init 80 (fun k ->
-          if k < 16
-          then number_of_32_bit_be (Bytes.sub chunk (k * 4) 4)
-          else 0)
+        if k < 16 then number_of_32_bit_be (Bytes.sub chunk (k * 4) 4) else 0)
     in
     for j = 16 to 79 do
       w.(j)
