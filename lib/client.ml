@@ -70,9 +70,7 @@ let complete_handshake env flow info_hash peerID =
     Tcp.Client.write_bytes flow handshake_bytes;
     let pstrlen_buf = Tcp.Client.read_bytes flow 1 in
     let pstrlen = Bytes.get_uint8 pstrlen_buf 0 in
-    Logs.debug (fun m -> m "pstrlen %d" pstrlen);
     let handshake_bytes = Tcp.Client.read_bytes flow (pstrlen + 48) in
-    (* Logs.debug (fun m -> m "handshake_bytes %s" handshake_bytes); *)
     let handshake_result = Handshake.read pstrlen handshake_bytes in
     match handshake_result with
     | Ok h when h.info_hash <> info_hash ->
@@ -102,9 +100,9 @@ let recv_bitfield flow env =
 ;;
 
 let connect (peer : Peers.t) info_hash peer_id env sw =
-  let () = Eio.traceln "Connecting to %s" (Peers.show peer) in
+  Log.debug "Connecting to %s" (Peers.show peer);
   let flow = Tcp.Client.open_connection peer.ip peer.port env sw in
-  let () = Logs.debug (fun m -> m "Connected to %s" (Peers.show peer)) in
+  Logs.debug (fun m -> m "Connected to %s" (Peers.show peer));
   let complete_handshake_result =
     complete_handshake env flow info_hash peer_id
   in

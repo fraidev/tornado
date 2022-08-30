@@ -47,7 +47,6 @@ let download_file output_file torrent_file env sw =
   let random_peer = Bytes.create 20 in
   let uri = build_tracker_url torrent_file random_peer 6881 in
   let peers = Lwt_main.run (Peers.request_peers uri) in
-  Eio.traceln "Got %d peers" (List.length peers);
   (* Download *)
   let torrent =
     Torrent.create_torrent
