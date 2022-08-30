@@ -2,8 +2,9 @@ name: "Build and Tests"
 on:
   pull_request:
   push:
+    branches: ["main"]
     paths-ignore:
-    - 'README.md'
+      - "README.md"
   schedule:
     # Prime the caches every Monday
     - cron: 0 1 * * MON
@@ -14,8 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         ocaml-compiler:
-          - 4.13.x
-          - 4.14.x
+          - ocaml-variants.5.0.0~alpha1+options
 
     runs-on: ubuntu-latest
 
@@ -27,9 +27,12 @@ jobs:
         uses: ocaml/setup-ocaml@master
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          opam-depext: false
 
       - name: "Install dependencies"
-        run: opam install . --deps-only --with-test
+        run: |
+          opam pin stdint https://github.com/andrenth/ocaml-stdint.git#322a8a4a8c69e4a0b75763460b915200356e3af3
+          opam install . --deps-only --with-test
 
       - name: Check autoformatting
         run: eval $(opam env) && dune build @fmt
