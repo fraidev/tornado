@@ -20,7 +20,7 @@
     :build
     (>= 3.1.1)))
   bencode
-  conduit-lwt-unix
+  eio_main
   uri
   cohttp-lwt-unix
   stdint

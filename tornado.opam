@@ -9,7 +9,6 @@ depends: [
   "alcotest-lwt" {with-test}
   "dune" {>= "3.2" & build & >= "3.1.1"}
   "bencode"
-  "conduit-lwt-unix"
   "uri"
   "cohttp-lwt-unix"
   "stdint"

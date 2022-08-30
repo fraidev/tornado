@@ -3,8 +3,8 @@
  (package tornado)
  (libraries
   bencode
-  conduit
-  conduit-lwt-unix
+  eio
+  eio_main
   uri
   cohttp-lwt-unix
   stdint
