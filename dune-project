@@ -29,13 +29,3 @@
   ppx_sexp_conv
   ))
 
-(package
- (name dev)
- (synopsis "A package to install dev dependencies")
- (description "THIS PACKAGE IS FOR DEVELOPMENT PURPOSE")
- (allow_empty)
- (depends
-  (ocamlformat
-   (>= 0.20))
-  (ocaml-lsp-server
-   (>= 1.10.3))))

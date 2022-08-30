@@ -7,8 +7,6 @@ Tornado is a BitTorrent client written entirely in OCaml.
 First, create a switch like so
 
 ```bash
-opam switch create . 4.14.0 --no-install
-or
 opam switch create . 5.0.0~alpha1+options --no-install
 ```
 
@@ -35,5 +33,12 @@ dune build @runtest --force --no-buffer
 
 ```
 dune exec bin/cli.exe debian-11.4.0-arm64-netinst.iso.torrent
+```
+
+## Developing 
+
+```
+dune isntall ocamlformat
+dune install ocaml-lsp-server
 ```
 
