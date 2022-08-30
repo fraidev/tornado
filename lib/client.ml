@@ -101,7 +101,9 @@ let recv_bitfield flow env =
 
 let connect (peer : Peers.t) info_hash peer_id env sw =
   Log.debug "Connecting to %s" (Peers.show peer);
-  let flow = Tcp.Client.open_connection peer.ip peer.port env sw in
+  let flow =
+    Tcp.Client.open_connection ~env ~sw ~host:peer.ip ~port:peer.port
+  in
   Logs.debug (fun m -> m "Connected to %s" (Peers.show peer));
   let complete_handshake_result =
     complete_handshake env flow info_hash peer_id

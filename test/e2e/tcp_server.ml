@@ -1,12 +1,7 @@
-(* open Lwt.Syntax *)
 
-(* let skip _ = () *)
-
-(* let listen ~stop ~port handler = *)
-(*   let config = `Port port in *)
-(*   let* ctx = Conduit_lwt_unix.init ~src:"127.0.0.1" () in *)
-(*   let server () = *)
-(*     Conduit_lwt_unix.serve ~stop ~ctx ~mode:(`TCP config) ~on_exn:skip handler *)
-(*   in *)
-(*   Lwt.return server *)
-(* ;; *)
+let listen ~net ~sw ~port =
+  let addr = `Tcp (Eio.Net.Ipaddr.V4.loopback, port) in
+  let socket = Eio.Net.listen net ~sw ~reuse_addr:true ~backlog:5 addr in
+  let flow, addr = Eio.Net.accept ~sw socket in
+  flow, addr
+;;

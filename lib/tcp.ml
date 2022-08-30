@@ -1,5 +1,5 @@
 module Client = struct
-  let open_connection (host : Ipaddr.V4.t) port (env : Eio.Stdenv.t) sw =
+  let open_connection ~(env : Eio.Stdenv.t) ~sw ~(host : Ipaddr.V4.t) ~port =
     let ip = Ipaddr.V4.to_octets host in
     let addr = `Tcp (Eio.Net.Ipaddr.of_raw ip, port) in
     Eio.Net.connect ~sw (Eio.Stdenv.net env) addr
@@ -10,11 +10,16 @@ module Client = struct
       Eio.Buf_write.bytes buf_write buf)
   ;;
 
-  let read_bytes socket_flow l =
-    let buf = Cstruct.create l in
+  let write socket_flow str =
+    let buf = Bytes.of_string str in
+    write_bytes socket_flow buf
+  ;;
+
+  let read_bytes socket_flow size =
+    let buf = Cstruct.create size in
     Eio.Flow.read_exact socket_flow buf;
     Cstruct.to_bytes buf
   ;;
 
-  let read socket_flow l = Bytes.to_string (read_bytes socket_flow l)
+  let read socket_flow size = Bytes.to_string (read_bytes socket_flow size)
 end
