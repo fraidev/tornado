@@ -2,6 +2,10 @@
 
 Tornado is a BitTorrent client written entirely in OCaml.
 
+[![asciicast](https://asciinema.org/a/518394.png)](https://asciinema.org/a/518394?t=25&rows=18&speed=5&)
+
+Note: speed x5 on this video.
+
 ## Setup
 
 ### Nix
