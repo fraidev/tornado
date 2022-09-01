@@ -21,6 +21,7 @@ let setup_log ?style_renderer level =
     { Logs.report }
   in
   Fmt_tty.setup_std_outputs ?style_renderer ();
+  Fmt.set_style_renderer Fmt.stderr `Ansi_tty;
   Logs.set_level ~all:true level;
   Logs.set_reporter format_reporter
 ;;

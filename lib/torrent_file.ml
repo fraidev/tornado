@@ -43,6 +43,12 @@ let build_tracker_url file peer_id port =
 ;;
 
 let download_file output_file torrent_file env sw =
+  let file_name =
+    match output_file, torrent_file.name with
+    | Some file, _ -> file
+    | _, Some file -> file
+    | _, _ -> "torrent_file"
+  in
   (* Get Peers *)
   let random_peer = Bytes.create 20 in
   let uri = build_tracker_url torrent_file random_peer 6881 in
@@ -57,14 +63,8 @@ let download_file output_file torrent_file env sw =
       (torrent_file.piece_length |> Int64.to_int)
       (torrent_file.length |> Int64.to_int)
   in
-  let final_buf = Torrent.download torrent env sw in
+  let final_buf = Torrent.download ~env ~sw torrent file_name in
   (* Write File *)
-  let file_name =
-    match output_file, torrent_file.name with
-    | Some file, _ -> file
-    | _, Some file -> file
-    | _, _ -> "torrent_file"
-  in
   let open Eio.Path in
   let dir = Eio.Stdenv.cwd env in
   let path = dir / file_name in

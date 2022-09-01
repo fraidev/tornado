@@ -33,6 +33,7 @@ type piece_work =
 
 type piece_result =
   { index : int
+  ; length : int
   ; buf : bytes
   }
 [@@deriving show]
@@ -75,7 +76,7 @@ let read_message (client : Client.t) (pw : piece_work) _torrent state =
      | _ -> ())
 ;;
 
-let rec request (client : Client.t) state pw =
+let rec request (client : Client.t) state (pw : piece_work) =
   if !(state.backlog) < 5 && !(state.requested) < pw.length
   then (
     let () =
@@ -100,7 +101,7 @@ let rec download_piece (client : Client.t) (pw : piece_work) torrent state =
   else state.buf
 ;;
 
-let try_download_piece env (client : Client.t) pw torrent =
+let try_download_piece env (client : Client.t) (pw : piece_work) torrent =
   let state =
     { requested = ref 0
     ; downloaded = ref 0
@@ -168,7 +169,9 @@ let rec download_torrent
            Logs.err (fun m -> m "Error: %s" e)
          | Ok () ->
            Log.debug "Integrity of piece %d is ok." pw.index;
-           let piece_result = { buf = piece_buf; index = pw.index } in
+           let piece_result =
+             { buf = piece_buf; length = pw.length; index = pw.index }
+           in
            Log.debug "Try send result %d." pw.index;
            Eio.Stream.add pieces_result_chan piece_result;
            Log.debug "Sent result %d." pw.index;
@@ -229,7 +232,7 @@ let rec start_work
     start_work env sw torrent peers_tail pieces_work_chan pieces_result_chan
 ;;
 
-let download (torrent : t) env sw =
+let download ~env ~sw (torrent : t) file_name =
   let final_buf = Bytes.create torrent.length in
   let pieces_hashes_len = Array.length torrent.piece_hashes in
   let pieces_work_chan = Eio.Stream.create 0 in
@@ -252,21 +255,17 @@ let download (torrent : t) env sw =
       pieces_work_chan
       pieces_result_chan);
   let done_pieces = ref 0 in
-  while !done_pieces < pieces_hashes_len do
-    let piece_result = Eio.Stream.take pieces_result_chan in
-    let length = calculate_piece_size torrent piece_result.index in
-    let start, _ = calculate_bounds_for_piece torrent piece_result.index in
-    done_pieces := !done_pieces + 1;
-    let percent =
-      float_of_int !done_pieces /. float_of_int pieces_hashes_len *. 100.
-    in
-    Logs.app (fun m ->
-      m
-        "Downloaded (%0.2f%%) - Piece: %d of %d"
-        percent
-        !done_pieces
-        pieces_hashes_len);
-    Bytes.blit piece_result.buf 0 final_buf start length
-  done;
+  let total = Int64.of_int torrent.length in
+  let progress = Download_bar.create_bars file_name total in
+  progress (fun file_layout ->
+    while !done_pieces < pieces_hashes_len do
+      let piece_result = Eio.Stream.take pieces_result_chan in
+      let length = calculate_piece_size torrent piece_result.index in
+      let start, _ = calculate_bounds_for_piece torrent piece_result.index in
+      done_pieces := !done_pieces + 1;
+      (* let percent = Int64.of_int (!done_pieces * piece_result.length) in *)
+      file_layout (Int64.of_int piece_result.length);
+      Bytes.blit piece_result.buf 0 final_buf start length
+    done);
   final_buf
 ;;

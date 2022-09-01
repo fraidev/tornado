@@ -14,6 +14,7 @@ buildDunePackage rec {
   };
 
   propagatedBuildInputs = [
+    progress
     eio
     piaf
     bencode
