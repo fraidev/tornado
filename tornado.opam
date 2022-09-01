@@ -6,7 +6,6 @@ description: "Tornado"
 maintainer: ["fraifelipe@gmail.com"]
 depends: [
   "alcotest" {with-test}
-  "alcotest-lwt" {with-test}
   "dune" {>= "3.2" & build & >= "3.1.1"}
   "bencode"
   "eio_main"

@@ -14,7 +14,6 @@
  (description "Tornado")
  (depends
   (alcotest :with-test)
-  (alcotest-lwt :with-test)
   (dune
    (and
     :build
