@@ -1,3 +1,3 @@
 let () =
-  Alcotest.run "Lwt Tornado Tests" [ Tcp_test.tests; Client_test.tests ]
+  Alcotest.run "Tornado Tests E2E" [ Tcp_test.tests; Client_test.tests ]
 ;;

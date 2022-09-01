@@ -6,13 +6,11 @@
   eio
   eio_main
   uri
-  cohttp-lwt-unix
   stdint
   fmt
   logs.fmt
   fmt.tty
   piaf
-  lwt
   )
  (preprocess
   (pps ppx_deriving.show ppx_sexp_conv ppx_let)))

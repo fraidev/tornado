@@ -1,5 +1,4 @@
 open Bencode_utils
-open Lwt.Syntax
 
 (* TORRENT *)
 type t =
@@ -44,9 +43,10 @@ let build_tracker_url file peer_id port =
 ;;
 
 let download_file output_file torrent_file env sw =
+  (* Get Peers *)
   let random_peer = Bytes.create 20 in
   let uri = build_tracker_url torrent_file random_peer 6881 in
-  let peers = Lwt_main.run (Peers.request_peers uri) in
+  let peers = Peers.request_peers ~env ~sw uri in
   (* Download *)
   let torrent =
     Torrent.create_torrent
@@ -65,10 +65,11 @@ let download_file output_file torrent_file env sw =
     | _, Some file -> file
     | _, _ -> "torrent_file"
   in
-  Lwt_main.run
-    (let* out_ch = Lwt_io.open_file ~mode:Output file_name in
-     let* () =
-       Lwt_io.write_from_exactly out_ch final_buf 0 (Bytes.length final_buf)
-     in
-     Lwt.return ())
+  let open Eio.Path in
+  let dir = Eio.Stdenv.cwd env in
+  let path = dir / file_name in
+  let out_ch = Eio.Path.open_out ~sw ~create:(`Or_truncate 0o644) path in
+  let source = Eio.Flow.cstruct_source [ Cstruct.of_bytes final_buf ] in
+  Eio.Flow.copy source out_ch
 ;;
+

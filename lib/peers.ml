@@ -1,6 +1,5 @@
 open Stdint
 open Ipaddr
-open Lwt.Syntax
 
 type t =
   { ip : V4.t
@@ -31,41 +30,16 @@ let create peers_bin =
     { ip; port })
 ;;
 
-let request_peers uri =
-  let* _resp, body = Cohttp_lwt_unix.Client.get uri in
-  let* body_string = Cohttp_lwt.Body.to_string body in
+let request_peers ~env ~sw uri =
+  let response = Piaf.Client.Oneshot.get env ~sw uri |> Result.get_ok in
+  let body_string = Piaf.Body.to_string response.body |> Result.get_ok in
   let tracker_bencode = Bencode.decode (`String body_string) in
   let peers_string =
     Bencode_utils.bencode_to_string tracker_bencode "peers" |> Option.get
   in
   let peers_bytes = peers_string |> Bytes.of_string in
   let peers = create peers_bytes in
-  Lwt.return peers
+  peers
 ;;
-
-(* let get_sync uri = *)
-(*   let open Lwt_result.Syntax in *)
-(*   Lwt_main.run *)
-(*     (print_endline "Sending request..."; *)
-(*      let* response = Piaf.Client.Oneshot.get uri in *)
-(*      if Piaf.Status.is_successful response.status *)
-(*      then Piaf.Body.to_string response.body *)
-(*      else ( *)
-(*        let message = Piaf.Status.to_string response.status in *)
-(*        Lwt.return (Error (`Msg message)))) *)
-(* in *)
-(* match get_sync uri with *)
-(* | Ok body -> *)
-(*   let tracker_bencode = Bencode.decode (`String body) in *)
-(*   let peers_string = *)
-(*     Bencode_utils.bencode_to_string tracker_bencode "peers" |> Option.get *)
-(*   in *)
-(*   let peers_bytes = peers_string |> Bytes.of_string in *)
-(*   let peers = create peers_bytes in *)
-(*   Result.ok peers *)
-(* | Error error -> *)
-(*   let message = Piaf.Error.to_string error in *)
-(*   prerr_endline ("Error: " ^ message); *)
-(*   Result.error `Download_peers_error *)
 
 let to_string peer = Printf.sprintf "%s:%d" (V4.to_string peer.ip) peer.port

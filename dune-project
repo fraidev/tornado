@@ -21,7 +21,6 @@
   bencode
   eio_main
   uri
-  cohttp-lwt-unix
   stdint
   ppx_deriving
   ppx_let
