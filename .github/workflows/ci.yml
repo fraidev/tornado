@@ -10,33 +10,22 @@ on:
     - cron: 0 1 * * MON
 
 jobs:
-  build:
+  native:
     strategy:
       fail-fast: false
       matrix:
-        ocaml-compiler:
-          - ocaml-variants.5.0.0~alpha1+options
-
-    runs-on: ubuntu-latest
-
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
     steps:
-      - name: "Checkout the repository"
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
-      - name: Use OCaml ${{ matrix.ocaml-compiler }}
-        uses: ocaml/setup-ocaml@master
+      - uses: cachix/install-nix-action@v16
+      - uses: cachix/cachix-action@v10
         with:
-          ocaml-compiler: ${{ matrix.ocaml-compiler }}
-          opam-depext: false
+          name: tornado
+          authToken: "${{ secrets.CACHIX_SIGNING_KEY }}"
+      - name: "Check formatting"
+        run: nix develop -c dune build @fmt
+      - name: "Run tests"
+        run: nix develop -c dune build @check @runtest --force --no-buffer
 
-      - name: "Install dependencies"
-        run: |
-          opam pin stdint https://github.com/andrenth/ocaml-stdint.git#322a8a4a8c69e4a0b75763460b915200356e3af3
-          opam install . --deps-only --with-test
-
-      - name: Check autoformatting
-        run: eval $(opam env) && dune build @fmt
-
-      - run: opam exec -- dune build
-
-      - run: opam exec -- dune runtest

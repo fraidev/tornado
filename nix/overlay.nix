@@ -11,20 +11,30 @@ in {
       alcotest = osuper.alcotest.overrideAttrs (o: {
         propagatedBuildInputs =
           prev.lib.lists.remove osuper.uuidm o.propagatedBuildInputs;
-        });
+      });
 
       piaf = osuper.piaf.overrideAttrs (o: {
         src = prev.fetchFromGitHub {
-            owner = "anmonteiro";
-            repo = "piaf";
-            rev = "b7ada509c8a262d155ae5d6e9ca7c98d14f9ad8a";
-            sha256 = "sha256-X3dDiZlYkzOEbuf7jFqjmV7SGsE6hi/nezbn6ht6Wdk=";
-            fetchSubmodules = true;
-          };
-          patches = [];
-          propagatedBuildInputs = with osuper; [ eio multipart_form sendfile ipaddr uri ssl magic-mime eio-ssl
-          httpaf-eio h2-eio ];
-        });
+          owner = "anmonteiro";
+          repo = "piaf";
+          rev = "b7ada509c8a262d155ae5d6e9ca7c98d14f9ad8a";
+          sha256 = "sha256-X3dDiZlYkzOEbuf7jFqjmV7SGsE6hi/nezbn6ht6Wdk=";
+          fetchSubmodules = true;
+        };
+        patches = [ ];
+        propagatedBuildInputs = with osuper; [
+          eio
+          multipart_form
+          sendfile
+          ipaddr
+          uri
+          ssl
+          magic-mime
+          eio-ssl
+          httpaf-eio
+          h2-eio
+        ];
+      });
 
       bencode = osuper.buildDunePackage {
         pname = "bencode";
