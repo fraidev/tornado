@@ -1,4 +1,3 @@
-open Lwt.Syntax
 open Tornado
 open Shared
 
@@ -7,18 +6,14 @@ let find_port () =
   16_384 + Random.int 10_000
 ;;
 
-let skip _ = ()
-
-let handler server_handshake _flow ic oc =
-  let hand_len = Bytes.length server_handshake in
-  let* () = Lwt_io.write_from_exactly oc server_handshake 0 hand_len in
-  let* () = Lwt_io.flush oc in
-  let* msg = Lwt_io.read ~count:5 ic in
-  let r = String.uppercase_ascii msg in
-  Lwt_io.write oc r
+let handler server_handshake flow =
+  Tcp.Client.write_bytes flow server_handshake;
+  let msg = Tcp.Client.read flow 5 in
+  let msg_uppercase = String.uppercase_ascii msg in
+  Tcp.Client.write flow msg_uppercase
 ;;
 
-let successful_handshake_test _switch () =
+let successful_handshake_test () =
   let port = find_port () in
   let server_handshake =
     [ 19; 66; 105; 116; 84; 111; 114; 114; 101; 110; 116; 32; 112; 114; 111
@@ -42,23 +37,27 @@ let successful_handshake_test _switch () =
     ; 253; 168; 193; 19 ]
     |> Utils.ints_to_bytes
   in
-  let stop, do_stop = Lwt.wait () in
-  let* server = Tcp_server.listen ~stop ~port (handler server_handshake) in
-  Lwt.async server;
-  let* _flow, ic, oc = Tcp.Client.open_connection Ipaddr.V4.localhost port in
-  let* handshake_result =
-    Client.complete_handshake ic oc info_hash client_peer_id
-  in
-  let h = Result.get_ok handshake_result in
-  let exp = Handshake.create info_hash expected_peer_id in
-  Check.check_string exp.pstr h.pstr;
-  Check.check_bytes exp.info_hash h.info_hash;
-  Check.check_bytes exp.peer_id h.peer_id;
-  Lwt.wakeup do_stop ();
-  Lwt.return_unit
+  Eio_main.run
+  @@ fun env ->
+  Eio.Switch.run
+  @@ fun sw ->
+  Eio.Fiber.fork ~sw (fun _ ->
+    let flow, _addr = Tcp_server.listen ~net:(Eio.Stdenv.net env) ~sw ~port in
+    handler server_handshake flow);
+  Eio.Fiber.fork ~sw (fun _ ->
+    let host = Ipaddr.V4.localhost in
+    let flow = Tcp.Client.open_connection ~env ~sw ~host ~port in
+    let handshake_result =
+      Client.complete_handshake env flow info_hash client_peer_id
+    in
+    let h = Result.get_ok handshake_result in
+    let exp = Handshake.create info_hash expected_peer_id in
+    Check.check_string exp.pstr h.pstr;
+    Check.check_bytes exp.info_hash h.info_hash;
+    Check.check_bytes exp.peer_id h.peer_id)
 ;;
 
-let failed_handshake_test _switch () =
+let failed_handshake_test () =
   let port = find_port () in
   let server_handshake =
     [ 19; 66; 105; 116; 84; 111; 114; 114; 101; 110; 116; 32; 112; 114; 111
@@ -77,24 +76,28 @@ let failed_handshake_test _switch () =
     [ 1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 14; 15; 16; 17; 18; 19; 20 ]
     |> Utils.ints_to_bytes
   in
-  let stop, do_stop = Lwt.wait () in
-  let* server = Tcp_server.listen ~stop ~port (handler server_handshake) in
-  Lwt.async server;
-  let* _flow, ic, oc = Tcp.Client.open_connection Ipaddr.V4.localhost port in
-  let* handshake_result =
-    Client.complete_handshake ic oc info_hash client_peer_id
-  in
-  let error = Result.get_error handshake_result in
-  let is_info_hash_error = error == `Info_hash_is_not_equal in
-  Check.check_bool true is_info_hash_error;
-  Lwt.wakeup do_stop ();
-  Lwt.return_unit
+  Eio_main.run
+  @@ fun env ->
+  Eio.Switch.run
+  @@ fun sw ->
+  Eio.Fiber.fork ~sw (fun _ ->
+    let flow, _addr = Tcp_server.listen ~net:(Eio.Stdenv.net env) ~sw ~port in
+    handler server_handshake flow);
+  Eio.Fiber.fork ~sw (fun _ ->
+    let host = Ipaddr.V4.localhost in
+    let flow = Tcp.Client.open_connection ~env ~sw ~host ~port in
+    let handshake_result =
+      Client.complete_handshake env flow info_hash client_peer_id
+    in
+    let error = Result.get_error handshake_result in
+    let is_info_hash_error = error == `Info_hash_is_not_equal in
+    Check.check_bool true is_info_hash_error)
 ;;
 
 let tests =
   ( "client"
   , List.map
-      (fun (desc, ty, f) -> Alcotest_lwt.test_case desc ty f)
+      (fun (desc, ty, f) -> Alcotest.test_case desc ty f)
       [ "Successful handshake.", `Quick, successful_handshake_test
       ; "Failed handshake.", `Quick, failed_handshake_test ] )
 ;;

@@ -1,11 +1,25 @@
 module Client = struct
-  let open_connection host port =
-    let client = `TCP (`IP Ipaddr.(V4 host), `Port port) in
-    Conduit_lwt_unix.(connect ~ctx:(Lazy.force default_ctx) client)
+  let open_connection ~(env : Eio.Stdenv.t) ~sw ~(host : Ipaddr.V4.t) ~port =
+    let ip = Ipaddr.V4.to_octets host in
+    let addr = `Tcp (Eio.Net.Ipaddr.of_raw ip, port) in
+    Eio.Net.connect ~sw (Eio.Stdenv.net env) addr
   ;;
 
-  let write_bytes oc buf =
-    let buf_len = Bytes.length buf in
-    Lwt_io.write_from_exactly oc buf 0 buf_len
+  let write_bytes socket_flow buf =
+    Eio.Buf_write.with_flow socket_flow (fun buf_write ->
+      Eio.Buf_write.bytes buf_write buf)
   ;;
+
+  let write socket_flow str =
+    let buf = Bytes.of_string str in
+    write_bytes socket_flow buf
+  ;;
+
+  let read_bytes socket_flow size =
+    let buf = Cstruct.create size in
+    Eio.Flow.read_exact socket_flow buf;
+    Cstruct.to_bytes buf
+  ;;
+
+  let read socket_flow size = Bytes.to_string (read_bytes socket_flow size)
 end

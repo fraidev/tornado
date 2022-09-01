@@ -1,19 +1,6 @@
 (library
  (name tornado)
  (package tornado)
- (libraries
-  bencode
-  conduit
-  conduit-lwt-unix
-  uri
-  piaf
-  stdint
-  sexplib
-  fmt
-  logs.fmt
-  fmt.tty
-  lwt
-  lwt.unix
-  unix)
+ (libraries bencode eio eio_main uri stdint fmt logs.fmt fmt.tty piaf)
  (preprocess
   (pps ppx_deriving.show ppx_sexp_conv ppx_let)))

@@ -65,18 +65,18 @@ let read_tests =
   List.map
     (fun (title, case) ->
       Alcotest.test_case title `Quick (fun () ->
-          let handshake = Handshake.read case.pstrlen case.handshake_bytes in
-          (match case.expected with
-          | Some exp ->
-            let result_handshake = Result.get_ok handshake in
-            Check.check_string exp.pstr result_handshake.pstr;
-            Check.check_bytes exp.info_hash result_handshake.info_hash;
-            Check.check_bytes exp.peer_id result_handshake.peer_id
-          | None ->
-            let result_handshake = Result.get_error handshake in
-            let same_error = result_handshake == Option.get case.error in
-            Check.check_bool true same_error);
-          ()))
+        let handshake = Handshake.read case.pstrlen case.handshake_bytes in
+        (match case.expected with
+         | Some exp ->
+           let result_handshake = Result.get_ok handshake in
+           Check.check_string exp.pstr result_handshake.pstr;
+           Check.check_bytes exp.info_hash result_handshake.info_hash;
+           Check.check_bytes exp.peer_id result_handshake.peer_id
+         | None ->
+           let result_handshake = Result.get_error handshake in
+           let same_error = result_handshake == Option.get case.error in
+           Check.check_bool true same_error);
+        ()))
     cases
 ;;
 

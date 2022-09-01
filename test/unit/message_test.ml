@@ -140,8 +140,8 @@ let to_string_tests =
         ("To string message: " ^ c.expected)
         `Quick
         (fun () ->
-          let msg_str = Message.to_string c.input in
-          Check.check_string c.expected msg_str))
+        let msg_str = Message.to_string c.input in
+        Check.check_string c.expected msg_str))
     cases
 ;;
 

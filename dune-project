@@ -14,30 +14,16 @@
  (description "Tornado")
  (depends
   (alcotest :with-test)
-  (alcotest-lwt :with-test)
   (dune
    (and
     :build
     (>= 3.1.1)))
   bencode
-  conduit-lwt-unix
+  eio_main
   uri
-  piaf
   stdint
   ppx_deriving
   ppx_let
   ppx_sexp_conv
   ))
 
-(package
- (name dev)
- (synopsis "A package to install dev dependencies")
- (description "THIS PACKAGE IS FOR DEVELOPMENT PURPOSE")
- (allow_empty)
- (depends
-  (ocamlformat
-   (>= 0.20))
-  (ocamlformat-rpc
-   (>= 0.19))
-  (ocaml-lsp-server
-   (>= 1.10.3))))

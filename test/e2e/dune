@@ -1,6 +1,6 @@
 (test
  (name runner)
  (package tornado)
- (libraries alcotest alcotest-lwt tornado lwt lwt.unix unix shared)
+ (libraries alcotest tornado shared)
  (preprocess
   (pps ppx_let)))
