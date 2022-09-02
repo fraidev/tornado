@@ -11,8 +11,7 @@ let config = `Port port
 let handler flow =
   let msg = Tcp.Client.read flow 5 in
   let msg_uppercase = String.uppercase_ascii msg in
-  let msg_bytes = Bytes.of_string msg_uppercase in
-  Tcp.Client.write_bytes flow msg_bytes
+  Tcp.Client.write flow msg_uppercase
 ;;
 
 let tcp_test () =
@@ -26,8 +25,7 @@ let tcp_test () =
   Eio.Fiber.fork ~sw (fun () ->
     let host = Ipaddr.V4.localhost in
     let flow = Tcp.Client.open_connection ~env ~sw ~host ~port in
-    let msg_in = Bytes.of_string "hello" in
-    Tcp.Client.write_bytes flow msg_in;
+    Tcp.Client.write flow "hello";
     let msg = Tcp.Client.read flow 5 in
     Check.check_string "HELLO" msg);
   ()

@@ -12,10 +12,7 @@ module Client = struct
       Eio.Buf_write.bytes buf_write buf)
   ;;
 
-  let write socket_flow str =
-    let buf = Bytes.of_string str in
-    write_bytes socket_flow buf
-  ;;
+  let write socket_flow str = Eio.Flow.copy_string str socket_flow
 
   let read_bytes socket_flow size =
     let buf = Cstruct.create size in
