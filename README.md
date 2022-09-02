@@ -27,12 +27,12 @@ Then you can run:
 
 ```
 opam pin stdint https://github.com/andrenth/ocaml-stdint.git#322a8a4a8c69e4a0b75763460b915200356e3af3
-dune install ocamlformat
-dune install ocaml-lsp-server
+opam install ocamlformat
+opam install ocaml-lsp-server
 opam install . --deps-only --with-test
 ```
 
-## Downloading a file and Test
+## Build, tests and Downloading a file
 
 Build the codebase with:
 
