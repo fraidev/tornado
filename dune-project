@@ -24,6 +24,5 @@
   stdint
   ppx_deriving
   ppx_let
-  ppx_sexp_conv
   ))
 

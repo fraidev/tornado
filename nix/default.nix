@@ -22,7 +22,6 @@ buildDunePackage rec {
     eio_main
     uri
     ppx_deriving
-    ppx_sexp_conv
     ppx_let
   ]
   # checkInputs are here because when cross compiling dune needs test dependencies
