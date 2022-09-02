@@ -1,6 +1,16 @@
 (library
  (name tornado)
  (package tornado)
- (libraries bencode eio eio_main uri stdint fmt logs.fmt fmt.tty piaf progress)
+ (libraries
+  bencode
+  eio
+  eio_main
+  uri
+  stdint
+  fmt
+  logs.fmt
+  fmt.tty
+  piaf
+  progress)
  (preprocess
   (pps ppx_deriving.show ppx_sexp_conv ppx_let)))

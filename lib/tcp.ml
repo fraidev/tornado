@@ -2,7 +2,9 @@ module Client = struct
   let open_connection ~(env : Eio.Stdenv.t) ~sw ~(host : Ipaddr.V4.t) ~port =
     let ip = Ipaddr.V4.to_octets host in
     let addr = `Tcp (Eio.Net.Ipaddr.of_raw ip, port) in
-    Eio.Net.connect ~sw (Eio.Stdenv.net env) addr
+    let net = Eio.Stdenv.net env in
+    let flow = (Eio.Net.connect ~sw net addr :> Eio.Flow.two_way) in
+    flow
   ;;
 
   let write_bytes socket_flow buf =

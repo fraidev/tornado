@@ -1,13 +1,7 @@
 open Stdint
 
 type t =
-  { flow :
-      < close : unit
-      ; copy : 'b. (#Eio.Flow.source as 'b) -> unit
-      ; probe : 'a. 'a Eio.Generic.ty -> 'a option
-      ; read_into : Cstruct.t -> int
-      ; read_methods : Eio.Flow.read_method list
-      ; shutdown : Eio.Flow.shutdown_command -> unit >
+  { flow : Eio.Flow.two_way
   ; choked : bool ref
   ; bitfield : Bitfield.t
   ; peer : Peers.t
