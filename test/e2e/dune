@@ -1,6 +1,4 @@
 (test
  (name runner)
  (package tornado)
- (libraries alcotest tornado shared)
- (preprocess
-  (pps ppx_let)))
+ (libraries alcotest tornado shared))

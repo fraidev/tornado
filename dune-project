@@ -23,6 +23,5 @@
   uri
   stdint
   ppx_deriving
-  ppx_let
   ))
 

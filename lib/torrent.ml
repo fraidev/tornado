@@ -237,6 +237,8 @@ let download ~env ~sw (torrent : t) file_name =
   let pieces_hashes_len = Array.length torrent.piece_hashes in
   let pieces_work_chan = Eio.Stream.create 0 in
   let pieces_result_chan = Eio.Stream.create pieces_hashes_len in
+  let domain_mgr = Eio.Stdenv.domain_mgr env in
+  let run f = Eio.Domain_manager.run domain_mgr f in
   Eio.Fiber.fork ~sw (fun _ ->
     let _ =
       Array.init pieces_hashes_len (fun index ->
@@ -246,14 +248,27 @@ let download ~env ~sw (torrent : t) file_name =
         Eio.Stream.add pieces_work_chan pw)
     in
     ());
+  Logs.app (fun m -> m "Start work");
   Eio.Fiber.fork ~sw (fun _ ->
-    start_work
-      env
-      sw
-      torrent
-      torrent.peers
-      pieces_work_chan
-      pieces_result_chan);
+    run (fun _ ->
+      Eio.Switch.run (fun sw2 ->
+        start_work
+          env
+          sw2
+          torrent
+          torrent.peers
+          pieces_work_chan
+          pieces_result_chan)));
+  Eio.Fiber.fork ~sw (fun _ ->
+    run (fun _ ->
+      Eio.Switch.run (fun sw2 ->
+        start_work
+          env
+          sw2
+          torrent
+          torrent.peers
+          pieces_work_chan
+          pieces_result_chan)));
   let done_pieces = ref 0 in
   let total = Int64.of_int torrent.length in
   let progress = Download_bar.create_bars file_name total in

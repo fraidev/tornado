@@ -13,4 +13,4 @@
   piaf
   progress)
  (preprocess
-  (pps ppx_deriving.show ppx_let)))
+  (pps ppx_deriving.show)))
