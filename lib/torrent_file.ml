@@ -42,7 +42,8 @@ let build_tracker_url file peer_id port =
   Uri.add_query_params uri query
 ;;
 
-let download_file output_file torrent_file env sw =
+let download_file output_file torrent_file env =
+  Eio.Switch.run @@ fun sw ->
   let file_name =
     match output_file, torrent_file.name with
     | Some file, _ -> file

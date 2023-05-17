@@ -110,20 +110,20 @@ let try_download_piece env (client : Client.t) (pw : piece_work) torrent =
     }
   in
   Logs.info (fun m ->
-    m
-      "Try to download piece %d of %d"
-      (pw.index + 1)
-      (Array.length torrent.piece_hashes));
+      m
+        "Try to download piece %d of %d"
+        (pw.index + 1)
+        (Array.length torrent.piece_hashes));
   let clock = Eio.Stdenv.clock env in
   Eio.Time.with_timeout_exn clock 30. (fun () ->
-    let piece_buf = download_piece client pw torrent state in
-    Logs.info (fun m ->
-      m
-        "Downloaded piece (%d of %d) with size %d"
-        (pw.index + 1)
-        (Array.length torrent.piece_hashes)
-        (Bytes.length piece_buf));
-    piece_buf)
+      let piece_buf = download_piece client pw torrent state in
+      Logs.info (fun m ->
+          m
+            "Downloaded piece (%d of %d) with size %d"
+            (pw.index + 1)
+            (Array.length torrent.piece_hashes)
+            (Bytes.length piece_buf));
+      piece_buf)
 ;;
 
 let check_integrity (pw : piece_work) buf =
@@ -140,11 +140,11 @@ let send_pw pieces_work_chan pw =
 ;;
 
 let rec download_torrent
-  env
-  (torrent : t)
-  (client : Client.t)
-  pieces_work_chan
-  pieces_result_chan
+    env
+    (torrent : t)
+    (client : Client.t)
+    pieces_work_chan
+    pieces_result_chan
   =
   let () = Logs.debug (fun m -> m "Try receive pw \n") in
   let pw : piece_work option = Eio.Stream.take_nonblocking pieces_work_chan in
@@ -159,7 +159,7 @@ let rec download_torrent
        then (
          send_pw pieces_work_chan pw;
          Logs.debug (fun m ->
-           m "This client does NOT have piece %d\n" pw.index))
+             m "This client does NOT have piece %d\n" pw.index))
        else (
          let piece_buf = try_download_piece env client pw torrent in
          let integrity_result = check_integrity pw piece_buf in
@@ -185,49 +185,49 @@ let rec download_torrent
 ;;
 
 let connect_and_download_torrent
-  (env : Eio.Stdenv.t)
-  sw
-  torrent
-  peer
-  pieces_work_chan
-  pieces_result_chan
+    (env : Eio_unix.Stdenv.base)
+    sw
+    torrent
+    peer
+    pieces_work_chan
+    pieces_result_chan
   =
   let client_result =
     let clock = Eio.Stdenv.clock env in
     Eio.Time.with_timeout_exn clock 4. (fun () ->
-      Client.connect peer torrent.info_hash torrent.peer_id env sw)
+        Client.connect peer torrent.info_hash torrent.peer_id env sw)
   in
   let client = Result.get_ok client_result in
   Logs.debug (fun m ->
-    m "Completed handshake with %s\n" (Ipaddr.V4.to_string peer.ip));
+      m "Completed handshake with %s\n" (Ipaddr.V4.to_string peer.ip));
   Client.send_unchoke client;
   Client.send_interested client;
   download_torrent env torrent client pieces_work_chan pieces_result_chan
 ;;
 
 let rec start_work
-  env
-  sw
-  torrent
-  (peers : Peers.t list)
-  pieces_work_chan
-  pieces_result_chan
+    env
+    sw
+    torrent
+    (peers : Peers.t list)
+    pieces_work_chan
+    pieces_result_chan
   =
   match peers with
   | [] -> ()
   | peers_head :: peers_tail ->
     let () =
-      Eio.Fiber.fork_sub
+      Eio.Fiber.fork
         ~sw
-        ~on_error:(fun e -> Logs.err (fun m -> m "%a" Fmt.exn e))
-        (fun sw ->
-          connect_and_download_torrent
-            env
-            sw
-            torrent
-            peers_head
-            pieces_work_chan
-            pieces_result_chan)
+        (fun _ ->
+           Eio.Switch.run_protected (fun sw ->
+               connect_and_download_torrent
+                 env
+                 sw
+                 torrent
+                 peers_head
+                 pieces_work_chan
+                 pieces_result_chan))
     in
     start_work env sw torrent peers_tail pieces_work_chan pieces_result_chan
 ;;
@@ -240,47 +240,47 @@ let download ~env ~sw (torrent : t) file_name =
   let domain_mgr = Eio.Stdenv.domain_mgr env in
   let run f = Eio.Domain_manager.run domain_mgr f in
   Eio.Fiber.fork ~sw (fun _ ->
-    let _ =
-      Array.init pieces_hashes_len (fun index ->
-        let hash = torrent.piece_hashes.(index) in
-        let length = calculate_piece_size torrent index in
-        let pw = { index; length; hash } in
-        Eio.Stream.add pieces_work_chan pw)
-    in
-    ());
+      let _ =
+        Array.init pieces_hashes_len (fun index ->
+            let hash = torrent.piece_hashes.(index) in
+            let length = calculate_piece_size torrent index in
+            let pw = { index; length; hash } in
+            Eio.Stream.add pieces_work_chan pw)
+      in
+      ());
   Logs.app (fun m -> m "Start work");
   Eio.Fiber.fork ~sw (fun _ ->
-    run (fun _ ->
-      Eio.Switch.run (fun sw2 ->
-        start_work
-          env
-          sw2
-          torrent
-          torrent.peers
-          pieces_work_chan
-          pieces_result_chan)));
+      run (fun _ ->
+          Eio.Switch.run (fun sw2 ->
+              start_work
+                env
+                sw2
+                torrent
+                torrent.peers
+                pieces_work_chan
+                pieces_result_chan)));
   Eio.Fiber.fork ~sw (fun _ ->
-    run (fun _ ->
-      Eio.Switch.run (fun sw2 ->
-        start_work
-          env
-          sw2
-          torrent
-          torrent.peers
-          pieces_work_chan
-          pieces_result_chan)));
+      run (fun _ ->
+          Eio.Switch.run (fun sw2 ->
+              start_work
+                env
+                sw2
+                torrent
+                torrent.peers
+                pieces_work_chan
+                pieces_result_chan)));
   let done_pieces = ref 0 in
   let total = Int64.of_int torrent.length in
   let progress = Download_bar.create_bars file_name total in
   progress (fun file_layout ->
-    while !done_pieces < pieces_hashes_len do
-      let piece_result = Eio.Stream.take pieces_result_chan in
-      let length = calculate_piece_size torrent piece_result.index in
-      let start, _ = calculate_bounds_for_piece torrent piece_result.index in
-      done_pieces := !done_pieces + 1;
-      (* let percent = Int64.of_int (!done_pieces * piece_result.length) in *)
-      file_layout (Int64.of_int piece_result.length);
-      Bytes.blit piece_result.buf 0 final_buf start length
-    done);
+      while !done_pieces < pieces_hashes_len do
+        let piece_result = Eio.Stream.take pieces_result_chan in
+        let length = calculate_piece_size torrent piece_result.index in
+        let start, _ = calculate_bounds_for_piece torrent piece_result.index in
+        done_pieces := !done_pieces + 1;
+        (* let percent = Int64.of_int (!done_pieces * piece_result.length) in *)
+        file_layout (Int64.of_int piece_result.length);
+        Bytes.blit piece_result.buf 0 final_buf start length
+      done);
   final_buf
 ;;

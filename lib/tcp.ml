@@ -1,5 +1,5 @@
 module Client = struct
-  let open_connection ~(env : Eio.Stdenv.t) ~sw ~(host : Ipaddr.V4.t) ~port =
+  let open_connection ~(env : Eio_unix.Stdenv.base) ~sw ~(host : Ipaddr.V4.t) ~port =
     let ip = Ipaddr.V4.to_octets host in
     let addr = `Tcp (Eio.Net.Ipaddr.of_raw ip, port) in
     let net = Eio.Stdenv.net env in
@@ -9,7 +9,7 @@ module Client = struct
 
   let write_bytes socket_flow buf =
     Eio.Buf_write.with_flow socket_flow (fun buf_write ->
-      Eio.Buf_write.bytes buf_write buf)
+        Eio.Buf_write.bytes buf_write buf)
   ;;
 
   let write socket_flow str = Eio.Flow.copy_string str socket_flow

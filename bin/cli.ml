@@ -1,5 +1,4 @@
 open Tornado
-open Eio.Std
 
 let usage = "tornado [--verbose] <torrent_file> -o <output>"
 let verbose = ref false
@@ -20,8 +19,6 @@ let () =
   Arg.parse spec_list anon_fun usage;
   Log.setup_log (Some (if !verbose then Debug else App));
   let torrent_file = Torrent_file.open_file !input_file in
-  Eio_main.run
-  @@ fun env ->
-  Switch.run
-  @@ fun sw -> Torrent_file.download_file !output_file torrent_file env sw
+  Eio_main.run @@ fun env ->
+  Torrent_file.download_file !output_file torrent_file env 
 ;;

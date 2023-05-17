@@ -18,10 +18,6 @@
    (and
     :build
     (>= 3.1.1)))
-  bencode
-  eio_main
-  uri
-  stdint
-  ppx_deriving
+  progress eio piaf eio_main bencode stdint uri ppx_deriving
   ))
 
