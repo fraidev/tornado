@@ -9,7 +9,6 @@ type t =
   ; length : int64
   ; name : string option
   }
-[@@deriving show]
 
 let create_with_beencode bencode_root =
   let announce = bencode_to_string bencode_root "announce" in
@@ -42,34 +41,3 @@ let build_tracker_url file peer_id port =
   Uri.add_query_params uri query
 ;;
 
-let download_file output_file torrent_file env =
-  Eio.Switch.run @@ fun sw ->
-  let file_name =
-    match output_file, torrent_file.name with
-    | Some file, _ -> file
-    | _, Some file -> file
-    | _, _ -> "torrent_file"
-  in
-  (* Get Peers *)
-  let random_peer = Bytes.create 20 in
-  let uri = build_tracker_url torrent_file random_peer 6881 in
-  let peers = Peers.request_peers ~env ~sw uri in
-  (* Download *)
-  let torrent =
-    Torrent.create_torrent
-      peers
-      random_peer
-      torrent_file.info_hash
-      torrent_file.piece_hashes
-      (torrent_file.piece_length |> Int64.to_int)
-      (torrent_file.length |> Int64.to_int)
-  in
-  let final_buf = Torrent.download ~env ~sw torrent file_name in
-  (* Write File *)
-  let open Eio.Path in
-  let dir = Eio.Stdenv.cwd env in
-  let path = dir / file_name in
-  let out_ch = Eio.Path.open_out ~sw ~create:(`Or_truncate 0o644) path in
-  let source = Eio.Flow.cstruct_source [ Cstruct.of_bytes final_buf ] in
-  Eio.Flow.copy source out_ch
-;;

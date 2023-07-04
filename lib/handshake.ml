@@ -3,7 +3,6 @@ type t =
   ; info_hash : bytes
   ; peer_id : bytes
   }
-[@@deriving show]
 
 let create info_hash peer_id =
   { pstr = "BitTorrent protocol"; info_hash; peer_id }

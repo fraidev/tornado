@@ -5,7 +5,6 @@ type t =
   { ip : V4.t
   ; port : int
   }
-[@@deriving show]
 
 let create peers_bin =
   let peer_size = 6 in
