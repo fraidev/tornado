@@ -9,8 +9,9 @@
   stdint
   fmt
   logs.fmt
-  fmt.tty
+  ipaddr
   piaf
+  fmt.tty
   progress)
  (preprocess
   (pps ppx_deriving.show)))

@@ -13,20 +13,16 @@ buildDunePackage rec {
       include = [ "bin" "lib" "dune-project" "tornado.opam" ];
     };
 
-  # This is the same as standard dune build but with static support
-  buildPhase = ''
-    runHook preBuild
-    echo "running ${if static then "static" else "release"} build"
-    dune build -p ${pname} --profile=${if static then "static" else "release"}
-    runHook postBuild
-  '';
-
   checkInputs = [ alcotest ];
-  propagatedBuildInputs =
-    [ eio piaf eio_main bencode stdint uri ppx_deriving progress ]
-    ++ checkInputs;
-  # checkInputs are here because when cross compiling dune needs test dependencies
-  # but they are not available for the build phase. The issue can be seen by adding strictDeps = true;.
+
+  propagatedBuildInputs = [
+    # Put dependencies here if you're creating a library
+  ];
+
+  buildInputs =
+    [ eio piaf eio_main bencode stdint uri ppx_deriving progress ipaddr ];
+
+  inherit doCheck;
 
   # Remove every directory which could have links to other store paths.
   # This makes the result much smaller

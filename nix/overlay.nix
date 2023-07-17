@@ -1,4 +1,4 @@
-final: prev:
+inal: prev:
 let
   disableCheck = package: package.overrideAttrs (o: { doCheck = false; });
   addCheckInputs = package:

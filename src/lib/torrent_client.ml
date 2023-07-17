@@ -137,8 +137,6 @@ let send_pw pieces_work_chan pw =
 ;;
 
 let download_piece env client torrent pieces_work_chan pieces_result_chan pw =
-  (* Eio.Switch.run_protected @@ fun sw -> *)
-  (* Eio.Fiber.fork ~sw @@ fun _ -> *)
   let piece_buf = try_download_piece env client pw torrent in
   let integrity_result = check_integrity pw piece_buf in
   match integrity_result with
@@ -160,7 +158,7 @@ let rec download_torrent
   env
   (torrent : t)
   (client : Client.t)
-  (pieces_work_chan: piece_work Eio.Stream.t) 
+  (pieces_work_chan : piece_work Eio.Stream.t)
   pieces_result_chan
   =
   Logs.debug (fun m -> m "Try receive pw \n");
@@ -247,7 +245,6 @@ let download_torrent ~env ~sw (torrent : t) file_name =
         let hash = torrent.piece_hashes.(index) in
         let length = calculate_piece_size torrent index in
         let pw = { index; length; hash } in
-        (* Log.debug "Add the pw %s" (show_piece_work pw); *)
         Eio.Stream.add pieces_work_chan pw)
     in
     ());
