@@ -1,7 +1,7 @@
 open Stdint
 
 type t =
-  { flow : Eio.Flow.two_way
+  { flow : Eio.Flow.two_way_ty Eio.Flow.two_way
   ; choked : bool ref
   ; bitfield : Bitfield.t
   ; peer : Peers.t

@@ -8,12 +8,22 @@ module Client = struct
     let ip = Ipaddr.V4.to_octets host in
     let addr = `Tcp (Eio.Net.Ipaddr.of_raw ip, port) in
     let net = Eio.Stdenv.net env in
-    let flow = (Eio.Net.connect ~sw net addr :> Eio.Flow.two_way) in
-    let fd = Eio_unix.Resource.fd_opt flow |> Option.get in
-    Eio_unix.Fd.use_exn "Client.open_connection" fd (fun fd ->
-      Unix.setsockopt fd TCP_NODELAY false;
-      Logs.debug (fun m -> m "TCP_NODELAY Disabled"));
-    flow
+    match Eio.Net.connect ~sw net addr with
+    | socket_flow ->
+      let fd = Eio_unix.Resource.fd_opt socket_flow |> Option.get in
+      Eio_unix.Fd.use_exn "Client.open_connection" fd (fun fd ->
+        Unix.setsockopt fd TCP_NODELAY false;
+        Logs.debug (fun m -> m "TCP_NODELAY Disabled"));
+      (socket_flow :> Eio.Flow.two_way_ty Eio.Flow.two_way)
+    | exception exn ->
+      Logs.err (fun m ->
+        m
+          "Failed to connect to %a:%d: %s"
+          Ipaddr.V4.pp
+          host
+          port
+          (Printexc.to_string exn));
+      raise exn
   ;;
 
   let write_bytes socket_flow buf =
