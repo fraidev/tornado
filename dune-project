@@ -18,6 +18,7 @@
    (and
     :build
     (>= 3.1.1)))
+  piaf
   progress
   eio
   eio_main
