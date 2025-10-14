@@ -1,5 +1,7 @@
 # Tornado
 
+⚠️ This repository is no longer actively maintained. I’m now focusing on a newer BitTorrent client: [bitrev](https://github.com/fraidev/bitrev).
+
 Tornado is a BitTorrent client written entirely in OCaml.
 
 [![asciicast](https://asciinema.org/a/518394.png)](https://asciinema.org/a/518394?t=25&rows=18&speed=5&)
